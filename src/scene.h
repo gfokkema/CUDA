@@ -3,8 +3,8 @@
 
 #include <vector>
 
+#include "util/camera.h"
 #include "util/ray.h"
-#include "util/vector.h"
 
 class Shape;
 
@@ -13,8 +13,10 @@ public:
 	Scene();
 	virtual ~Scene();
 
+	void render(Vector*& buffer, int width, int height);
 	const Vector trace(const Ray ray);
 private:
+	Camera cam;
 	std::vector<Shape*> _shapes;
 };
 
