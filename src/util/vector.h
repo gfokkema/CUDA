@@ -6,6 +6,7 @@
 
 class Vector {
 public:
+	Vector() : v{0, 0, 0} {};
 	Vector(float x, float y, float z) : v{x, y, z} {};
 	~Vector() {};
 
@@ -31,6 +32,11 @@ public:
 	const Vector normalize() const {
 		float invlength = 1 / this->length();
 		return Vector(v[0] * invlength, v[1] * invlength, v[2] * invlength);
+	}
+	const float operator*(const Vector& rhs) const {
+		return	v[0] * rhs[0] +
+				v[1] * rhs[1] +
+				v[2] * rhs[2];
 	}
 	const Vector operator%(const Vector& rhs) const {
 		return Vector(	v[1] * rhs[2] - v[2] * rhs[1],

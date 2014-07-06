@@ -9,10 +9,10 @@ public:
 		: _pos(pos), _dir(dir), _up(up) {};
 	~Camera() {};
 
-	const Vector pos()   { return _pos; };
-	const Vector dir()   { return _dir; };
-	const Vector up()    { return _up;  };
-	const Vector right() { return _dir % _up; };
+	const Vector pos() const   { return _pos; };
+	const Vector dir() const   { return _dir; };
+	const Vector up() const    { return _up;  };
+	const Vector right() const { return _dir % _up; };
 private:
 	Vector _pos;
 	Vector _dir;

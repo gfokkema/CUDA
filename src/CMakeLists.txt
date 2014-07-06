@@ -8,6 +8,8 @@ add_definitions(-std=c++11)
 list (APPEND CUDA_NVCC_FLAGS "-arch=compute_20; -code=sm_20")
 
 add_subdirectory (cuda)
+add_subdirectory (shapes)
 
 add_executable (main main.cpp)
 add_executable (raytracer scene.cpp raytracer.cpp)
+target_link_libraries (raytracer shapes)

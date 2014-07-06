@@ -9,8 +9,8 @@ public:
 		: _pos(pos), _dir(dir) {};
 	~Ray() {};
 
-	const Vector pos() { return _pos; };
-	const Vector dir() { return _dir; };
+	const Vector pos() const { return _pos; };
+	const Vector dir() const { return _dir; };
 private:
 	Vector _pos;
 	Vector _dir;
