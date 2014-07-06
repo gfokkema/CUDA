@@ -13,7 +13,7 @@ public:
 	Scene();
 	virtual ~Scene();
 
-	void render(Vector*& buffer, int width, int height);
+	void render(unsigned char* buffer, int width, int height);
 	const Vector trace(const Ray ray);
 private:
 	Camera cam;

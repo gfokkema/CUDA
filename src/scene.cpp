@@ -12,7 +12,7 @@ Scene::~Scene() {
 	// TODO Auto-generated destructor stub
 }
 
-void Scene::render(Vector*& buffer, int width, int height) {
+void Scene::render(unsigned char* buffer, int width, int height) {
 	Camera cam;
 	Vector up = cam.up();
 	Vector right = cam.right();
@@ -22,9 +22,9 @@ void Scene::render(Vector*& buffer, int width, int height) {
 	float invwidth = 1.f / width;
 	float invheight = 1.f / height;
 
-	Vector *pixel = buffer;
+	unsigned char *channel = buffer;
 	for (int yi = 0; yi < height; yi++) {
-		for (int xi = 0; xi < width; xi++, pixel++) {
+		for (int xi = 0; xi < width; xi++) {
 			float x = (xi + .5) * invwidth - 0.5;
 			float y = (yi + .5) * invheight - 0.5;
 
@@ -32,7 +32,10 @@ void Scene::render(Vector*& buffer, int width, int height) {
 			Vector raydir = (imageproj - pos).normalize();
 			Ray ray(pos, raydir);
 
-			*pixel = this->trace(ray);
+			Vector pixel = this->trace(ray);
+			for (int i = 0; i < 3; i++) {
+				*channel++ = (unsigned char)(std::min(1.f, pixel[i]) * 255);
+			}
 		}
 	}
 }

@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <GL/gl.h>
+#include <GLFW/glfw3.h>
 
 #include <fstream>
 #include <iostream>
@@ -9,28 +9,60 @@
 #define WIDTH 512
 #define HEIGHT 512
 
+GLFWwindow* window;
+
 Scene scene;
 
 int main(int argc, char* argv[]) {
-	//glewInit();
-	//GLuint BUFFER;
-	//glGenBuffers(1, &BUFFER);
-	//glBindBuffer(GL_PIXEL_UNPACK_BUFFER, BUFFER);
-	//glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT, NULL, GL_DYNAMIC_DRAW);
-
-	Vector *image = new Vector[WIDTH * HEIGHT];
-	scene.render(image, WIDTH, HEIGHT);
-
-	//unsigned char* buffer_map = (unsigned char*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-	//glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-	std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
-	ofs << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-	for (unsigned i = 0; i < WIDTH * HEIGHT; i++) {
-		ofs <<
-		(unsigned char)(std::min(1.f, image[i][0]) * 255) <<
-		(unsigned char)(std::min(1.f, image[i][1]) * 255) <<
-		(unsigned char)(std::min(1.f, image[i][2]) * 255);
+	// Initialise GLFW
+	if (!glfwInit()) {
+		fprintf( stderr, "Failed to initialize GLFW\n" );
+		return -1;
 	}
-	ofs.close();
+
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Open a window and create its OpenGL context
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
+	if( window == NULL ){
+		fprintf( stderr, "Failed to open GLFW window.\n" );
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		return -1;
+	}
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+	// Initialize our vertex buffer
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, vbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 3, 0, GL_DYNAMIC_DRAW);
+
+	// Our ray tracing loop
+	do {
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+		scene.render(buffer, WIDTH, HEIGHT);
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	} while(glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+			glfwWindowShouldClose(window) == 0 );
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
 }

@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 project (cuda-testing)
 
 find_package (GLEW REQUIRED)
+find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -18,4 +19,4 @@ add_subdirectory (shapes)
 
 add_executable (main main.cpp)
 add_executable (raytracer scene.cpp window.cpp)
-target_link_libraries (raytracer shapes ${OPENGL_LIBRARIES} ${GLEW_LIBRARY})
+target_link_libraries (raytracer shapes ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY})
