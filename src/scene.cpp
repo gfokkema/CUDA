@@ -3,7 +3,7 @@
 #include "util/ray.h"
 #include "scene.h"
 
-Scene::Scene() {
+Scene::Scene() : cam() {
 	// Initialize shapes here.
 	_shapes.push_back(new Sphere(Vector(0,0,-3), .2));
 }
@@ -13,7 +13,6 @@ Scene::~Scene() {
 }
 
 void Scene::render(unsigned char* buffer, int width, int height) {
-	Camera cam;
 	Vector up = cam.up();
 	Vector right = cam.right();
 	Vector pos = cam.pos();
