@@ -20,11 +20,6 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
 	if( window == NULL ){
@@ -53,9 +48,13 @@ int main(int argc, char* argv[]) {
 	do {
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// Map the buffer and render the scene
 		unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 		scene.render(buffer, WIDTH, HEIGHT);
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+		// Draw the buffer onto the off screen buffer
+		glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
