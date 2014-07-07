@@ -14,7 +14,6 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 add_definitions(-std=c++11)
 
-#add_subdirectory (cuda)
 add_subdirectory (shapes)
 
 add_executable (main main.cpp)
