@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (cuda-testing)
+project (RT-Raytracing)
 
 find_package (GLEW REQUIRED)
 find_package (OpenGL REQUIRED)
