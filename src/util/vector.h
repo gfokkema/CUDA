@@ -23,6 +23,13 @@ public:
 		return Vector(v[0] - rhs[0], v[1] - rhs[1], v[2] - rhs[2]);
 	}
 
+	Vector& operator+=(const Vector& rhs) {
+		v[0] += rhs[0];
+		v[1] += rhs[1];
+		v[2] += rhs[2];
+		return (*this);
+	}
+
 	/**
 	 * Extended vector operations
 	 */

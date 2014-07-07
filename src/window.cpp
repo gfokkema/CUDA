@@ -4,14 +4,40 @@
 #include <iostream>
 #include <sys/time.h>
 
+#include "util/camera.h"
 #include "scene.h"
 
 #define WIDTH 512
 #define HEIGHT 512
 
-GLFWwindow* window;
+namespace {
+	GLFWwindow* window;
+	Scene scene;
 
-Scene scene;
+	/**
+	* Time independent keyboard function
+	*/
+	void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
+		switch (key) {
+			case GLFW_KEY_ESCAPE:
+				glfwSetWindowShouldClose(window, 1);
+				break;
+		}
+	}
+	/**
+	* Time dependent keyboard function
+	*/
+	void handle_keyboard(float dt) {
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) scene.cam.strafe(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scene.cam.strafe(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) scene.cam.move(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) scene.cam.move(-1.f, dt);
+	}
+
+	void handle_input(float dt) {
+		handle_keyboard(dt);
+	}
+}
 
 int main(int argc, char* argv[]) {
 	// Initialise GLFW
@@ -37,6 +63,8 @@ int main(int argc, char* argv[]) {
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	// Set the keyboard callback for time independent keyboard handling
+	glfwSetKeyCallback(window, &key_callback);
 
 	// Initialize our vertex buffer
 	GLuint vbo;
@@ -44,10 +72,9 @@ int main(int argc, char* argv[]) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, vbo);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 3, 0, GL_DYNAMIC_DRAW);
 
-	// Our ray tracing loop
-	struct timeval start, end;
-	gettimeofday(&start, nullptr);
 	do {
+		// Set the timer to zero
+		glfwSetTime(0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Map the buffer and render the scene
@@ -62,13 +89,10 @@ int main(int argc, char* argv[]) {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		gettimeofday(&end, nullptr);
-		float diff =	(end.tv_sec + end.tv_usec * 1e-6) -
-						(start.tv_sec + start.tv_usec * 1e-6);
-		printf("FPS: %f\n", 1.f / diff);
-		std::swap(start, end);
-	} while(glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-			glfwWindowShouldClose(window) == 0 );
+		double dt = glfwGetTime();
+		handle_input(dt);
+		printf("FPS: %f\n", 1.f / dt);
+	} while(!glfwWindowShouldClose(window));
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

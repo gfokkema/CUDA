@@ -9,6 +9,8 @@ public:
 		: _pos(pos), _dir(dir), _up(up) {};
 	~Camera() {};
 
+	void strafe(float velocity, float dt);
+	void move(float velocity, float dt);
 	const Vector pos() const   { return _pos; };
 	const Vector dir() const   { return _dir; };
 	const Vector up() const    { return _up;  };
