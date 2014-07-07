@@ -1,8 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <fstream>
 #include <iostream>
+#include <sys/time.h>
 
 #include "scene.h"
 
@@ -45,6 +45,8 @@ int main(int argc, char* argv[]) {
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 3, 0, GL_DYNAMIC_DRAW);
 
 	// Our ray tracing loop
+	struct timeval start, end;
+	gettimeofday(&start, nullptr);
 	do {
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -59,6 +61,12 @@ int main(int argc, char* argv[]) {
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		gettimeofday(&end, nullptr);
+		float diff =	(end.tv_sec + end.tv_usec * 1e-6) -
+						(start.tv_sec + start.tv_usec * 1e-6);
+		printf("FPS: %f\n", 1.f / diff);
+		std::swap(start, end);
 	} while(glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 			glfwWindowShouldClose(window) == 0 );
 
