@@ -16,8 +16,8 @@ public:
 	void setCamera(Camera* cam);
 	void render(unsigned char* buffer);
 	const Vector trace(const Ray& ray);
-	Camera* _cam;
 private:
+	Camera* _cam;
 	std::vector<Shape*> _shapes;
 };
 

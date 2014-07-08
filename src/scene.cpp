@@ -4,7 +4,7 @@
 #include "util/ray.h"
 #include "scene.h"
 
-Scene::Scene() {
+Scene::Scene() : _cam(nullptr) {
 	// Initialize shapes here.
 	_shapes.push_back(new Sphere(Vector(0,0,-3), .2));
 }
