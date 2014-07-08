@@ -60,6 +60,9 @@ inline Vector operator*(const float factor, const Vector& rhs) {
 inline Vector operator*(const Vector& lhs, const float factor) {
 	return factor * lhs;
 }
+inline Vector operator/(const Vector& lhs, const float factor) {
+	return Vector(lhs[0] / factor, lhs[1] / factor, lhs[2] / factor);
+}
 inline std::ostream& operator<<(std::ostream& out, const Vector& rhs) {
 	return out << "x: " << rhs[0] << "\ty: " << rhs[1] << "\tz: " << rhs[2];
 }
