@@ -13,9 +13,10 @@ public:
 	Scene();
 	virtual ~Scene();
 
-	void render(unsigned char* buffer, int width, int height);
+	void setCamera(Camera* cam);
+	void render(unsigned char* buffer);
 	const Vector trace(const Ray ray);
-	Camera cam;
+	Camera* _cam;
 private:
 	std::vector<Shape*> _shapes;
 };
