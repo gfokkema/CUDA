@@ -6,7 +6,7 @@ Sphere::Sphere(Vector origin, float radius)
 
 Sphere::~Sphere() {}
 
-bool Sphere::intersect(const Ray ray, Vector& hit, Vector& normal) {
+bool Sphere::intersect(const Ray& ray, Vector& hit, Vector& normal) {
 	Vector trans_origin = ray.pos() - this->_origin;
 	float a = ray.dir() * ray.dir();
 	float b = 2 * trans_origin * ray.dir();

@@ -7,7 +7,7 @@ class Sphere : public Shape {
 public:
 	Sphere(Vector origin, float radius);
 	virtual ~Sphere();
-	virtual bool intersect(const Ray ray, Vector& hit, Vector& normal);
+	virtual bool intersect(const Ray& ray, Vector& hit, Vector& normal);
 private:
 	float _radius;
 };

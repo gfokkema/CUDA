@@ -9,7 +9,7 @@ class Shape {
 public:
 	Shape(Vector origin) : _origin(origin) {};
 	virtual ~Shape() {};
-	virtual bool intersect(Ray ray, Vector& hit, Vector& normal) = 0;
+	virtual bool intersect(const Ray& ray, Vector& hit, Vector& normal) = 0;
 protected:
 	Vector _origin;
 };
