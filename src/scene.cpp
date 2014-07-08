@@ -1,5 +1,6 @@
 #include "shapes/shape.h"
 #include "shapes/sphere.h"
+#include "util/camera.h"
 #include "util/ray.h"
 #include "scene.h"
 
@@ -42,7 +43,7 @@ void Scene::render(unsigned char* buffer) {
 	}
 }
 
-const Vector Scene::trace(const Ray ray) {
+const Vector Scene::trace(const Ray& ray) {
 	for(Shape* shape : _shapes) {
 		Vector hit, normal;
 		if (shape->intersect(ray, hit, normal)) {

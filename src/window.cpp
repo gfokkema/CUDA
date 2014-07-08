@@ -1,9 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-#include <sys/time.h>
-
 #include "util/camera.h"
 #include "scene.h"
 
@@ -39,16 +36,19 @@ namespace {
 	}
 
 	void handle_mouse() {
-		double x, y;
 		double middle_x = WIDTH/2.0;
 		double middle_y = HEIGHT/2.0;
+
+		double x, y;
 		glfwGetCursorPos(window, &x, &y);
-		if (x == 0.f || y == 0.f) return;
-		double dx = x - middle_x;
-		double dy = y - middle_y;
-		if (dx == 0.f && dy == 0.f) return;
-		std::cout<<x<<", "<<y<<std::endl;
-		camera.lookAt(x, HEIGHT - y);
+		if (x < WIDTH && y < HEIGHT) {
+			double dx = x - middle_x;
+			double dy = y - middle_y;
+			if (dx == 0.f && dy == 0.f) return;
+
+			std::cout << x << ", " << y << std::endl;
+			camera.lookAt(x, HEIGHT - y);
+		}
 		glfwSetCursorPos(window, middle_x, middle_y);
 	}
 
@@ -71,14 +71,14 @@ namespace {
 int main(int argc, char* argv[]) {
 	// Initialise GLFW
 	if (!glfwInit()) {
-		fprintf( stderr, "Failed to initialize GLFW\n" );
+		std::cerr << "Failed to initialize GLFW" << std::endl;
 		return -1;
 	}
 
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
 	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window.\n" );
+		std::cerr << "Failed to open GLFW window.\n" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 
 	// Initialize GLEW
 	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
+		std::cerr << "Failed to initialize GLEW" << std::endl;
 		return -1;
 	}
 
@@ -99,9 +99,6 @@ int main(int argc, char* argv[]) {
 	// Set the keyboard callback for time independent keyboard handling
 	glfwSetKeyCallback(window, &key_callback);
 	glfwSetWindowFocusCallback(window, &focus_callback);
-	double middle_x = WIDTH/2.0;
-	double middle_y = HEIGHT/2.0;
-	glfwSetCursorPos(window, middle_x, middle_y);
 
 	// Initialize our vertex buffer
 	GLuint vbo;
@@ -128,7 +125,7 @@ int main(int argc, char* argv[]) {
 
 		double dt = glfwGetTime();
 		handle_input(dt);
-//		printf("FPS: %f\n", 1.f / dt);
+//		std::cout << "FPS: " << 1.f / dt << std::endl;
 	} while(!glfwWindowShouldClose(window));
 
 	// Close OpenGL window and terminate GLFW

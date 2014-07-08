@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "util/camera.h"
 #include "util/ray.h"
 
+class Camera;
 class Shape;
 
 class Scene {
@@ -15,7 +15,7 @@ public:
 
 	void setCamera(Camera* cam);
 	void render(unsigned char* buffer);
-	const Vector trace(const Ray ray);
+	const Vector trace(const Ray& ray);
 	Camera* _cam;
 private:
 	std::vector<Shape*> _shapes;
