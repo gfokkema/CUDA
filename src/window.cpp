@@ -24,6 +24,21 @@ namespace {
 				break;
 		}
 	}
+
+	void handle_mouse() {
+		double x, y;
+		double middle_x = WIDTH/2.0;
+		double middle_y = HEIGHT/2.0;
+		glfwGetCursorPos(window, &x, &y);
+		if (x == 0.f || y == 0.f) return;
+		double dx = x - middle_x;
+		double dy = y - middle_y;
+		if (dx == 0.f && dy == 0.f) return;
+		std::cout<<x<<", "<<y<<std::endl;
+		scene.cam.lookAt(x, y);
+		glfwSetCursorPos(window, middle_x, middle_y);
+	}
+
 	/**
 	* Time dependent keyboard function
 	*/
@@ -36,6 +51,7 @@ namespace {
 
 	void handle_input(float dt) {
 		handle_keyboard(dt);
+		handle_mouse();
 	}
 }
 
@@ -63,8 +79,13 @@ int main(int argc, char* argv[]) {
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	// Set the keyboard callback for time independent keyboard handling
 	glfwSetKeyCallback(window, &key_callback);
+	double middle_x = WIDTH/2.0;
+	double middle_y = HEIGHT/2.0;
+	glfwSetCursorPos(window, middle_x, middle_y);
 
 	// Initialize our vertex buffer
 	GLuint vbo;
@@ -91,7 +112,7 @@ int main(int argc, char* argv[]) {
 
 		double dt = glfwGetTime();
 		handle_input(dt);
-		printf("FPS: %f\n", 1.f / dt);
+//		printf("FPS: %f\n", 1.f / dt);
 	} while(!glfwWindowShouldClose(window));
 
 	// Close OpenGL window and terminate GLFW

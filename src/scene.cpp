@@ -27,8 +27,7 @@ void Scene::render(unsigned char* buffer, int width, int height) {
 			float x = (xi + .5) * invwidth - 0.5;
 			float y = (yi + .5) * invheight - 0.5;
 
-			Vector imageproj = x * right + y * up + pos + dir;
-			Vector raydir = (imageproj - pos).normalize();
+			Vector raydir = (x * right + y * up + dir).normalize();
 			Ray ray(pos, raydir);
 
 			Vector pixel = this->trace(ray);
