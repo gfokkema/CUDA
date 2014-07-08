@@ -25,6 +25,18 @@ namespace {
 		}
 	}
 
+	/**
+	 * Focus callback function
+	 */
+	void focus_callback(GLFWwindow * window, int focused) {
+		if (focused) {
+			double middle_x = WIDTH/2.0;
+			double middle_y = HEIGHT/2.0;
+			glfwSetCursorPos(window, middle_x, middle_y);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+	}
+
 	void handle_mouse() {
 		double x, y;
 		double middle_x = WIDTH/2.0;
@@ -83,6 +95,7 @@ int main(int argc, char* argv[]) {
 
 	// Set the keyboard callback for time independent keyboard handling
 	glfwSetKeyCallback(window, &key_callback);
+	glfwSetWindowFocusCallback(window, &focus_callback);
 	double middle_x = WIDTH/2.0;
 	double middle_y = HEIGHT/2.0;
 	glfwSetCursorPos(window, middle_x, middle_y);
