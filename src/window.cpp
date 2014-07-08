@@ -32,10 +32,10 @@ namespace {
 		glfwGetCursorPos(window, &x, &y);
 		if (x == 0.f || y == 0.f) return;
 		double dx = x - middle_x;
-		double dy = middle_y - y;
+		double dy = y - middle_y;
 		if (dx == 0.f && dy == 0.f) return;
 		std::cout<<x<<", "<<y<<std::endl;
-		scene.cam.lookAt(x, y);
+		scene.cam.lookAt(x, HEIGHT - y);
 		glfwSetCursorPos(window, middle_x, middle_y);
 	}
 
