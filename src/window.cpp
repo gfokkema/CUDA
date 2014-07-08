@@ -7,11 +7,12 @@
 #include "util/camera.h"
 #include "scene.h"
 
-#define WIDTH 512
-#define HEIGHT 512
+#define WIDTH 640
+#define HEIGHT 480
 
 namespace {
 	GLFWwindow* window;
+	Camera camera(WIDTH, HEIGHT);
 	Scene scene;
 
 	/**
@@ -43,10 +44,10 @@ namespace {
 	* Time dependent keyboard function
 	*/
 	void handle_keyboard(float dt) {
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) scene.cam.strafe(-1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scene.cam.strafe(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) scene.cam.move(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) scene.cam.move(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) camera.strafe(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) camera.strafe(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) camera.move(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) camera.move(-1.f, dt);
 	}
 
 	void handle_input(float dt) {
@@ -77,6 +78,8 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	scene.setCamera(&camera);
+
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -100,7 +103,7 @@ int main(int argc, char* argv[]) {
 
 		// Map the buffer and render the scene
 		unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-		scene.render(buffer, WIDTH, HEIGHT);
+		scene.render(buffer);
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
 		// Draw the buffer onto the off screen buffer

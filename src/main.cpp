@@ -7,7 +7,7 @@ int main() {
 	Vector vec = (vec1 + vec2).normalize();
 	std::cout << vec << " length: " << vec.length() << std::endl;
 
-	Camera cam;
+	Camera cam(512, 512);
 	std::cout << "pos:\t" << cam.pos() << std::endl;
 	std::cout << "dir:\t" << cam.dir() << std::endl;
 	std::cout << "up:\t" << cam.up() << std::endl;
