@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "CL/cl.hpp"
+#include "opencl.h"
 
 #include "util/camera.h"
 #include "scene.h"
@@ -12,8 +12,8 @@
 namespace {
 	GLFWwindow* window;
 	Camera camera(WIDTH, HEIGHT);
+	OpenCL opencl;
 	Scene scene;
-	cl::Device device;
 
 	/**
 	* Time independent keyboard function
@@ -69,42 +69,6 @@ namespace {
 		handle_keyboard(dt);
 		handle_mouse();
 	}
-
-	int initOpenCL(cl::Device& device) {
-		cl_int err;
-		std::vector<cl::Platform> platforms;
-
-		err = cl::Platform::get(&platforms);
-		if (err != CL_SUCCESS) return err;
-
-		float max_ver;
-		for (int i = 0; i < platforms.size(); i++) {
-			std::vector<cl::Device> devices;
-			err = platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-			if (err != CL_SUCCESS) continue;
-
-			std::string version;
-			err = platforms[i].getInfo(CL_PLATFORM_VERSION, &version);
-			if (err != CL_SUCCESS) continue;
-
-			float ver = atof(version.substr(7,3).c_str());
-			if (ver > max_ver && devices.size() > 0) {
-				max_ver = ver;
-				device = devices[0];
-			}
-		}
-
-		std::string platversion, devicename;
-		err = device.getInfo(CL_DEVICE_VERSION, &platversion);
-		if (err != CL_SUCCESS) return err;
-		err = device.getInfo(CL_DEVICE_NAME, &devicename);
-		if (err != CL_SUCCESS) return err;
-
-		std::cout << "Selected platform:\t" << platversion << std::endl;
-		std::cout << "Selected device:\t" << devicename << std::endl;
-
-		return CL_SUCCESS;
-	}
 }
 
 int main(int argc, char* argv[]) {
@@ -129,10 +93,13 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	scene.setCamera(&camera);
+	// Initialize OpenCL
+	if (opencl.init() != CL_SUCCESS) {
+		std::cerr << "Failed to initialize OpenCL" << std::endl;
+		return -1;
+	}
 
-	// Initalize OpenCL device
-	initOpenCL(device);
+	scene.setCamera(&camera);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);

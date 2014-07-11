@@ -3,9 +3,8 @@
 
 #include <vector>
 
-#include "util/ray.h"
-
 class Camera;
+class Ray;
 class Shape;
 
 class Scene {

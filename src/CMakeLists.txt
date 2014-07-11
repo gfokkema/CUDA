@@ -20,6 +20,5 @@ include_directories("include")
 
 add_subdirectory (shapes)
 add_subdirectory (util)
-add_executable (main main.cpp)
-add_executable (raytracer scene.cpp window.cpp)
+add_executable (raytracer opencl.cpp scene.cpp window.cpp)
 target_link_libraries (raytracer util shapes ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY} OpenCL)

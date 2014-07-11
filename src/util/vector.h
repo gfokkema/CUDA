@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <CL/cl.hpp>
+
 class Vector {
 public:
 	Vector() : v{0, 0, 0} {};
@@ -50,6 +52,7 @@ public:
 						v[2] * rhs[0] - v[0] * rhs[2],
 						v[0] * rhs[1] - v[1] * rhs[0]);
 	}
+	const cl_float3 cl_type() const { return {v[0], v[1], v[2]}; };
 private:
 	float v[3];
 };
