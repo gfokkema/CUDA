@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "produceray.h"
+#include "opencl/produceray.h"
 
 class Camera;
 class Ray;
@@ -21,6 +21,7 @@ private:
 	Camera* _cam;
 	std::vector<Shape*> _shapes;
 	ProduceRay rays;
+	//TraceRay trace;
 };
 
 #endif /* SCENE_H_ */

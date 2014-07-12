@@ -16,9 +16,10 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 add_definitions(-std=c++11)
 
-include_directories("include")
+include_directories(${CMAKE_SOURCE_DIR})
 
+add_subdirectory (opencl)
 add_subdirectory (shapes)
 add_subdirectory (util)
-add_executable (raytracer produceray.cpp opencl.cpp scene.cpp window.cpp)
-target_link_libraries (raytracer util shapes ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY} OpenCL)
+add_executable (raytracer scene.cpp window.cpp)
+target_link_libraries (raytracer opencl shapes util ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY} OpenCL)

@@ -1,8 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "opencl.h"
-
 #include "util/camera.h"
 #include "scene.h"
 

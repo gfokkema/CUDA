@@ -10,7 +10,7 @@ typedef struct cl_camera {
 	float4 right;
 } cl_camera;
 
-__kernel void produceray(__global float4* output, cl_camera cam) {
+__kernel void produceray(__global float4* output, __const cl_camera cam) {
 	int yi = get_global_id(0);
 	int offset = yi * cam.width;
 	
