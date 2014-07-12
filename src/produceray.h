@@ -9,7 +9,7 @@ class ProduceRay : public OpenCL {
 public:
 	ProduceRay();
 	virtual ~ProduceRay();
-	int perform(Camera* cam);
+	int perform(Camera* cam, cl_float4*& raydirs);
 private:
 	cl::Kernel kernel;
 };
