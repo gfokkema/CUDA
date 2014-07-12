@@ -4,7 +4,7 @@
 
 #include "opencl.h"
 
-OpenCL::OpenCL() {}
+OpenCL::OpenCL() : initialized(false) {}
 
 OpenCL::~OpenCL() {}
 
@@ -47,24 +47,36 @@ int OpenCL::init() {
 	queue = cl::CommandQueue(context, device, 0, &err);
 	if (err != CL_SUCCESS) return err;
 
+	this->initialized = true;
 	return CL_SUCCESS;
 }
 
 int OpenCL::load(std::string kernel_path, cl::Kernel& kernel) {
 	std::ifstream file(kernel_path);
 	std::stringstream buffer;
+	std::string strbuffer;
 
 	buffer << file.rdbuf();
-	const char* txt_source = buffer.str().c_str();
+	strbuffer = buffer.str();
+	const char* txt_source = strbuffer.c_str();
 
 	cl::Program::Sources source(1, std::make_pair(txt_source, strlen(txt_source)));
 	cl::Program program(context, source);
 
+	std::cout << "--------------------------" << std::endl;
+	std::cout << "--- source code loaded ---" << std::endl;
+	std::cout << source[0].first << std::endl;
+	std::cout << "--------------------------" << std::endl;
+
 	cl_int err;
 	std::vector<cl::Device> devices(1, device);
 	err = program.build(devices, 0, 0, 0);
-	if (err != CL_SUCCESS) return err;
+	if (err != CL_SUCCESS) {
+		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) << std::endl;
+		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
+		return err;
+	}
 
-	kernel = cl::Kernel(program, kernel_path.c_str(), &err);
+	kernel = cl::Kernel(program, "produceray", &err);
 	return err;
 }

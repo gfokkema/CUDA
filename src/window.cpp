@@ -12,7 +12,6 @@
 namespace {
 	GLFWwindow* window;
 	Camera camera(WIDTH, HEIGHT);
-	OpenCL opencl;
 	Scene scene;
 
 	/**
@@ -90,12 +89,6 @@ int main(int argc, char* argv[]) {
 	// Initialize GLEW
 	if (glewInit() != GLEW_OK) {
 		std::cerr << "Failed to initialize GLEW" << std::endl;
-		return -1;
-	}
-
-	// Initialize OpenCL
-	if (opencl.init() != CL_SUCCESS) {
-		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}
 

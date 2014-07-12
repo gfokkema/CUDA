@@ -18,6 +18,8 @@ void Scene::setCamera(Camera* cam) {
 }
 
 void Scene::render(unsigned char* buffer) {
+	rays.perform(_cam);
+
 	Vector up = _cam->up();
 	Vector right = _cam->right();
 	Vector pos = _cam->pos();

@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "produceray.h"
+
 class Camera;
 class Ray;
 class Shape;
@@ -18,6 +20,7 @@ public:
 private:
 	Camera* _cam;
 	std::vector<Shape*> _shapes;
+	ProduceRay rays;
 };
 
 #endif /* SCENE_H_ */
