@@ -78,6 +78,9 @@ int OpenCL::load(std::string kernel_path, cl::Kernel& kernel) {
 		return err;
 	}
 
-	kernel = cl::Kernel(program, "produceray", &err);
+	const char* name = kernel_path.substr(kernel_path.rfind("/") + 1, kernel_path.length()).c_str();
+	std::cout << "--- BUILD SUCCESS: " << name << "---" << std::endl;
+
+	kernel = cl::Kernel(program, name, &err);
 	return err;
 }
