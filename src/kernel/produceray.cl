@@ -1,3 +1,7 @@
+#ifndef __OPENCL_VERSION__
+#include "opencl.h"
+#endif
+
 typedef struct cl_camera {
 	int width, height;
 	float4 pos;
