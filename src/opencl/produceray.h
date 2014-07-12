@@ -1,16 +1,20 @@
 #ifndef PRODUCERAY_H_
 #define PRODUCERAY_H_
 
-#include "opencl.h"
-
 class Camera;
+class OpenCL;
 
-class ProduceRay : public OpenCL {
+namespace cl {
+class Kernel;
+}
+
+class ProduceRay {
 public:
-	ProduceRay();
+	ProduceRay(OpenCL* opencl);
 	virtual ~ProduceRay();
 	int perform(Camera* cam, cl_float4*& raydirs);
 private:
+	OpenCL* _opencl;
 	cl::Kernel kernel;
 };
 

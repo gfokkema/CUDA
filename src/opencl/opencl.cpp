@@ -4,7 +4,9 @@
 
 #include "opencl.h"
 
-OpenCL::OpenCL() : initialized(false) {}
+OpenCL::OpenCL() {
+	if (init() != CL_SUCCESS) std::cerr << "Failed to initialize OpenCL" << std::endl;
+}
 
 OpenCL::~OpenCL() {}
 
@@ -47,7 +49,6 @@ int OpenCL::init() {
 	queue = cl::CommandQueue(context, device, 0, &err);
 	if (err != CL_SUCCESS) return err;
 
-	this->initialized = true;
 	return CL_SUCCESS;
 }
 

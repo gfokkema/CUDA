@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "opencl/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
 
@@ -10,7 +11,8 @@
 namespace {
 	GLFWwindow* window;
 	Camera camera(WIDTH, HEIGHT);
-	Scene scene;
+	OpenCL opencl;
+	Scene scene(&opencl);
 
 	/**
 	* Time independent keyboard function

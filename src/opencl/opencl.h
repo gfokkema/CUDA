@@ -10,10 +10,10 @@ public:
 
 	int init();
 	int load(std::string kernel_path, cl::Kernel& kernel);
-protected:
-	bool initialized;
+
 	cl::CommandQueue queue;
 	cl::Context context;
+protected:
 	cl::Device device;
 };
 

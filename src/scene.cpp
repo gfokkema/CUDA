@@ -6,7 +6,7 @@
 #include "util/ray.h"
 #include "scene.h"
 
-Scene::Scene() : _cam(nullptr) {
+Scene::Scene(OpenCL* opencl) : _cam(nullptr), rays(opencl), tracer(opencl) {
 	// Initialize shapes here.
 	_shapes.push_back(new Sphere(Vector(0,0,-3), .2));
 }
@@ -30,6 +30,8 @@ void Scene::render(unsigned char* buffer) {
 
 	cl_float4* gpuraydirs;
 	rays.perform(_cam, gpuraydirs);
+
+	//tracer.perform(_cam, gpuraydirs);
 
 	unsigned size = _cam->width() * _cam->height();
 	unsigned char *channel = buffer;

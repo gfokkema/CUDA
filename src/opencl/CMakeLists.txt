@@ -1,5 +1,6 @@
 set (opencl_sources
-	produceray.cpp
 	opencl.cpp
+	produceray.cpp
+	traceray.cpp
 )
 add_library (opencl ${opencl_sources})
