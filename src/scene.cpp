@@ -27,49 +27,23 @@ void Scene::render(unsigned char* buffer) {
 
 
 	std::clock_t c_start = std::clock();
-	float invwidth = 1.f / _cam->width();
-	float invheight = 1.f / _cam->height();
+
+	cl_float4* gpuraydirs;
+	rays.perform(_cam, gpuraydirs);
 
 	unsigned size = _cam->width() * _cam->height();
-	cl_float4* raydirs = new cl_float4[size];
 	unsigned char *channel = buffer;
-	unsigned offset = 0;
-	for (int yi = 0; yi < _cam->height(); yi++) {
-		offset = yi * _cam->width();
-		for (int xi = 0; xi < _cam->width(); xi++) {
-			float x = (xi + .5) * invwidth - 0.5;
-			float y = (yi + .5) * invheight - 0.5;
+	for (unsigned i = 0; i < size; i++) {
+		Ray ray(pos, gpuraydirs[i]);
 
-			Vector raydir = (x * right + y * up + dir).normalize();
-			raydirs[offset + xi] = raydir.cl_type();
-			//Ray ray(pos, raydir);
-
-			//Vector pixel = this->trace(ray);
-			//for (int i = 0; i < 3; i++) {
-			//	*channel++ = (unsigned char)(std::min(1.f, pixel[i]) * 255);
-			//}
+		Vector pixel = this->trace(ray);
+		for (int i = 0; i < 3; i++) {
+			*channel++ = (unsigned char)(std::min(1.f, pixel[i]) * 255);
 		}
 	}
 	std::clock_t c_end = std::clock();
 	printf("Test duration (regular): %f ms\n", 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
 
-	c_start = std::clock();
-	cl_float4* gpuraydirs;
-	rays.perform(_cam, gpuraydirs);
-	c_end = std::clock();
-	printf("Test duration (OpenCL): %f ms\n", 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
-
-	unsigned count = 0;
-	for (unsigned i = 0; i < size; i++) {
-		bool equal = true;
-		for (int j = 0; j < 3; j++) {
-			if (fabs(raydirs[i].v4[j] - gpuraydirs[i].v4[j]) > 0.000001) equal = false;
-		}
-		if (equal) count++;
-	}
-	std::cout << "result: " << count << "/" << size << " correct." << std::endl;
-
-	delete raydirs;
 	delete gpuraydirs;
 }
 

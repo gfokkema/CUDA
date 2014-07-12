@@ -10,6 +10,7 @@ class Vector {
 public:
 	Vector() : v{0, 0, 0} {};
 	Vector(float x, float y, float z) : v{x, y, z} {};
+	Vector(cl_float4 cl) : v{cl.v4[0], cl.v4[1], cl.v4[2]} {};
 	~Vector() {};
 
 	/**
