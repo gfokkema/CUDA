@@ -30,8 +30,7 @@ void Scene::render(unsigned char* buffer) {
 
 	cl_float4* gpuraydirs;
 	rays.perform(_cam, gpuraydirs);
-
-	//tracer.perform(_cam, gpuraydirs);
+	tracer.perform(_cam, gpuraydirs, _shapes, buffer);
 
 	unsigned size = _cam->width() * _cam->height();
 	unsigned char *channel = buffer;
@@ -50,7 +49,7 @@ void Scene::render(unsigned char* buffer) {
 }
 
 const Vector Scene::trace(const Ray& ray) {
-	for(Shape* shape : _shapes) {
+	for(Sphere* shape : _shapes) {
 		Vector hit, normal;
 		if (shape->intersect(ray, hit, normal)) {
 			return Vector(1,0,0);

@@ -11,6 +11,7 @@ typedef struct cl_camera {
 } cl_camera;
 
 __kernel void produceray(__global float4* output, __const cl_camera cam) {
+	printf("produceray\n");
 	int yi = get_global_id(0);
 	int offset = yi * cam.width;
 	

@@ -10,6 +10,7 @@ class Camera;
 class OpenCL;
 class Ray;
 class Shape;
+class Sphere;
 
 class Scene {
 public:
@@ -21,7 +22,7 @@ public:
 	const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
-	std::vector<Shape*> _shapes;
+	std::vector<Sphere*> _shapes;
 	ProduceRay rays;
 	TraceRay tracer;
 };
