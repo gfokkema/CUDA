@@ -131,14 +131,14 @@ int OpenCL::traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shap
 
 	// Initialize kernel
 	cl::Kernel kernel(program, "traceray", &err);
-	err = kernel.setArg(0, cl_read_rays);
-	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;
-	err = kernel.setArg(1, cl_read_shapes);
-	if (err != CL_SUCCESS) std::cout << "arg2 error: " << err << std::endl;
-	err = kernel.setArg(2, cl_write);
-	if (err != CL_SUCCESS) std::cout << "arg3 error: " << err << std::endl;
-	err = kernel.setArg(3, cam->pos().cl_type());
+	err = kernel.setArg(0, cam->pos().cl_type());
 	if (err != CL_SUCCESS) std::cout << "arg4 error: " << err << std::endl;
+	err = kernel.setArg(1, cl_read_rays);
+	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;
+	err = kernel.setArg(2, cl_read_shapes);
+	if (err != CL_SUCCESS) std::cout << "arg2 error: " << err << std::endl;
+	err = kernel.setArg(3, cl_write);
+	if (err != CL_SUCCESS) std::cout << "arg3 error: " << err << std::endl;
 
 	// Enqueue kernel
 	cl::NDRange global(size);

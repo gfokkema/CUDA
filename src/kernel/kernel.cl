@@ -35,9 +35,17 @@ typedef struct cl_shape {
 	int type;					// offset 48
 } cl_shape;
 
-bool intersect(__const float4 origin, float4 dir, cl_shape shape);
+unsigned char
+intersect(
+		__const float4 origin,
+		float4 dir,
+		cl_shape shape);
 
-__kernel void produceray(__global float4* output, __const cl_camera cam) {
+__kernel void
+produceray(
+		__global float4* output,
+		__const cl_camera cam)
+{
 	int yi = get_global_id(0);
 	int offset = yi * cam.width;
 
@@ -52,21 +60,30 @@ __kernel void produceray(__global float4* output, __const cl_camera cam) {
 	}
 }
 
-__kernel void traceray(__global float4* read_rays, __global cl_shape* read_shapes, __global unsigned char* write_buffer, __const float4 origin) {
+__kernel void
+traceray(
+		__const float4 origin,
+		__global float4* read_rays,
+		__global cl_shape* read_shapes,
+		__global unsigned char* write_buffer)
+{
 	int idx = get_global_id(0);
-
-	if (intersect(origin, read_rays[idx], read_shapes[0]))
-		write_buffer[idx * 3] = 255;
+	write_buffer[idx * 3] = intersect(origin, read_rays[idx], read_shapes[0]);
 }
 
-bool intersect(__const float4 origin, float4 dir, cl_shape shape) {
+unsigned char
+intersect(
+		__const float4 origin,
+		float4 dir,
+		cl_shape shape)
+{
 	float4 trans_origin = origin - shape.sphere.origin;
 	float a = dot(dir, dir);
 	float b = 2 * dot(trans_origin, dir);
 	float c = dot(trans_origin, trans_origin) - dot(shape.sphere.radius, shape.sphere.radius);
 
 	float disc = b * b - 4 * a * c;
-	if (disc < 0)	return false;
+	if (disc < 0)	return 0;
 
 	// We use the following in place of the quadratic formula for
 	// more numeric precision.
@@ -75,11 +92,12 @@ bool intersect(__const float4 origin, float4 dir, cl_shape shape) {
 				-0.5 * (b - sqrt(disc));
 	float t0 = q / a;
 	float t1 = c / q;
+	//if (t0 < t1) swap(t0,t1);
 
 	float t;
-	if (t0 < EPSILON)	return false;
+	if (t0 < EPSILON)	return 0;
 	if (t1 < 0)		t = t0;
 	else			t = t1;
 
-	return true;
+	return 255;
 }
