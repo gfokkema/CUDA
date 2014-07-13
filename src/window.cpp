@@ -92,6 +92,12 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	// Initialize OpenCL
+	if (opencl.init() != CL_SUCCESS) {
+		std::cerr << "Failed to initialize OpenCL" << std::endl;
+		return -1;
+	}
+
 	scene.setCamera(&camera);
 
 	// Ensure we can capture the escape key being pressed below

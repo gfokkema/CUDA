@@ -3,14 +3,12 @@
 
 #include <vector>
 
-#include "opencl/produceray.h"
-#include "opencl/traceray.h"
+#include "util/vector.h"
 
+struct cl_shape;
 class Camera;
 class OpenCL;
 class Ray;
-class Shape;
-class Sphere;
 
 class Scene {
 public:
@@ -22,9 +20,8 @@ public:
 	const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
-	std::vector<Sphere*> _shapes;
-	ProduceRay rays;
-	TraceRay tracer;
+	OpenCL* _device;
+	std::vector<cl_shape*> _shapes;
 };
 
 #endif /* SCENE_H_ */
