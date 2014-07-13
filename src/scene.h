@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "shapes/shape.h"
 #include "util/vector.h"
 
 struct cl_shape;
@@ -21,7 +22,7 @@ public:
 private:
 	Camera* _cam;
 	OpenCL* _device;
-	std::vector<cl_shape*> _shapes;
+	std::vector<cl_shape> _shapes;
 };
 
 #endif /* SCENE_H_ */

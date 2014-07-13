@@ -3,7 +3,8 @@
 
 #include <CL/cl.hpp>
 
-struct cl_shape;
+#include "shapes/shape.h"
+
 class Camera;
 
 class OpenCL {
@@ -15,7 +16,7 @@ public:
 	int load(std::string kernel_path);
 
 	int produceray(Camera* cam, cl_float4*& raydirs);
-	int traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape*> shapes, unsigned char*& buffer);
+	int traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer);
 
 	cl::CommandQueue queue;
 	cl::Context context;

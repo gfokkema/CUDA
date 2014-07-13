@@ -27,7 +27,7 @@ typedef struct cl_shape {
 			cl_float4 v2;		// offset 16
 			cl_float4 v3;		// offset 32
 		} triangle;
-	} properties;
+	};
 
 	int type;					// offset 48
 } cl_shape;

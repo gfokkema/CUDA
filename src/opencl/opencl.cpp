@@ -50,7 +50,7 @@ int OpenCL::init() {
 	queue = cl::CommandQueue(context, device, 0, &err);
 	if (err != CL_SUCCESS) return err;
 
-	this->load("../src/kernel/kernel.cl");
+	err = this->load("../src/kernel/kernel.cl");
 	if (err != CL_SUCCESS) return err;
 
 	return CL_SUCCESS;
@@ -115,7 +115,7 @@ int OpenCL::produceray(Camera* cam, cl_float4*& raydirs) {
 	return CL_SUCCESS;
 }
 
-int OpenCL::traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape*> shapes, unsigned char*& buffer) {
+int OpenCL::traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer) {
 	cl_int err;
 	unsigned size = cam->width() * cam->height();
 

@@ -3,6 +3,10 @@
 #define __constant
 #define __local
 
+#define bool;
+#define false;
+#define true;
+
 typedef struct float2 {
   float x, y;
 } float2;
