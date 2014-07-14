@@ -1,10 +1,3 @@
-/*
- * cpudevice.cpp
- *
- *  Created on: Jul 14, 2014
- *      Author: gerlof
- */
-
 #include <devices/cpudevice.h>
 
 CPUDevice::CPUDevice() {}
@@ -12,35 +5,35 @@ CPUDevice::CPUDevice() {}
 CPUDevice::~CPUDevice() {}
 
 int CPUDevice::init() {
-	return CL_SUCCESS;
+	return 0;
 }
 
-int CPUDevice::produceray(Camera* cam, cl_float4*& raydirs) {
-	raydirs = new cl_float4[cam->width() * cam->height()];
+int CPUDevice::produceray(Camera* cam, float4*& raydirs) {
+	raydirs = new float4[cam->width() * cam->height()];
 
 	float invwidth = 1.f / cam->width();
 	float invheight = 1.f / cam->height();
 
-	cl_float4 *ray = raydirs;
+	float4 *ray = raydirs;
 	for (int yi = 0; yi < cam->height(); yi++) {
 		for (int xi = 0; xi < cam->width(); xi++) {
 			float x = (xi + .5) * invwidth - 0.5;
 			float y = (yi + .5) * invheight - 0.5;
 
-			*ray++ = (x * cam->right() + y * cam->up() + cam->dir()).normalize().cl_type();
+			*ray++ = (x * cam->right() + y * cam->up() + cam->dir()).normalize().gpu_type();
 		}
 	}
 }
 
-int CPUDevice::traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer) {
+int CPUDevice::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
 	for (int i = 0; i < cam->width() * cam->height(); i++) {
-		for (cl_shape shape : shapes) {
-			buffer[i * 3] = intersect(cam->pos().cl_type(), raydirs[i], shape);
+		for (shape shape : shapes) {
+			buffer[i * 3] = intersect(cam->pos().gpu_type(), raydirs[i], shape);
 		}
 	}
 }
 
-unsigned char CPUDevice::intersect(Vector origin, Vector dir, cl_shape shape) {
+unsigned char CPUDevice::intersect(Vector origin, Vector dir, shape shape) {
 	Vector trans_origin = origin - shape.sphere.origin;
 	float a = dir * dir;
 	float b = 2 * trans_origin * dir;

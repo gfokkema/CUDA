@@ -4,13 +4,15 @@
 #include <cmath>
 #include <iostream>
 
-#include <CL/cl.hpp>
+typedef struct float4 {
+	float v4[4];
+} float4 __attribute ((aligned(16)));
 
 class Vector {
 public:
 	Vector() : v{0, 0, 0} {};
 	Vector(float x, float y, float z) : v{x, y, z} {};
-	Vector(cl_float4 cl) : v{cl.v4[0], cl.v4[1], cl.v4[2]} {};
+	Vector(float4 cl) : v{cl.v4[0], cl.v4[1], cl.v4[2]} {};
 	~Vector() {};
 
 	/**
@@ -53,7 +55,7 @@ public:
 						v[2] * rhs[0] - v[0] * rhs[2],
 						v[0] * rhs[1] - v[1] * rhs[0]);
 	}
-	const cl_float4 cl_type() const { return {v[0], v[1], v[2], 0}; };
+	const float4 gpu_type() const { return {v[0], v[1], v[2], 0}; };
 private:
 	float v[3];
 };

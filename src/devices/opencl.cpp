@@ -83,7 +83,7 @@ int OpenCL::load(std::string kernel_path) {
 	return CL_SUCCESS;
 }
 
-int OpenCL::produceray(Camera* cam, cl_float4*& raydirs) {
+int OpenCL::produceray(Camera* cam, float4*& raydirs) {
 	cl_int err;
 	unsigned size = cam->width() * cam->height();
 
@@ -94,7 +94,7 @@ int OpenCL::produceray(Camera* cam, cl_float4*& raydirs) {
 	cl::Kernel kernel(program, "produceray", &err);
 	err = kernel.setArg(0, cl_write);
 	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;
-	err = kernel.setArg(1, cam->cl_type());
+	err = kernel.setArg(1, cam->gpu_type());
 	if (err != CL_SUCCESS) std::cout << "arg2 error: " << err << std::endl;
 
 	// Enqueue kernel
@@ -105,30 +105,30 @@ int OpenCL::produceray(Camera* cam, cl_float4*& raydirs) {
 	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
 
 	// Read results
-	raydirs = new cl_float4[size];
-	err = this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, size * sizeof(cl_float4), raydirs);
+	raydirs = new float4[size];
+	err = this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, size * sizeof(float4), raydirs);
 	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
 
 	return CL_SUCCESS;
 }
 
-int OpenCL::traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer) {
+int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
 	cl_int err;
 	unsigned size = cam->width() * cam->height();
 
-	cl::Buffer cl_read_rays = cl::Buffer(this->context, CL_MEM_READ_ONLY, size * sizeof(cl_float4));
-	cl::Buffer cl_read_shapes = cl::Buffer(this->context, CL_MEM_READ_ONLY, shapes.size() * sizeof(cl_shape));
+	cl::Buffer cl_read_rays = cl::Buffer(this->context, CL_MEM_READ_ONLY, size * sizeof(float4));
+	cl::Buffer cl_read_shapes = cl::Buffer(this->context, CL_MEM_READ_ONLY, shapes.size() * sizeof(shape));
 	// Initialize write buffer
 	cl::Buffer cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, 3 * size * sizeof(unsigned char));
 
-	err = this->queue.enqueueWriteBuffer(cl_read_rays, CL_TRUE, 0, size * sizeof(cl_float4), raydirs);
+	err = this->queue.enqueueWriteBuffer(cl_read_rays, CL_TRUE, 0, size * sizeof(float4), raydirs);
 	if (err != CL_SUCCESS) std::cout << "cl_read_rays error: " << err << std::endl;
-	err = this->queue.enqueueWriteBuffer(cl_read_shapes, CL_TRUE, 0, shapes.size() * sizeof(cl_shape), shapes.data());
+	err = this->queue.enqueueWriteBuffer(cl_read_shapes, CL_TRUE, 0, shapes.size() * sizeof(shape), shapes.data());
 	if (err != CL_SUCCESS) std::cout << "cl_read_shapes error: " << err << std::endl;
 
 	// Initialize kernel
 	cl::Kernel kernel(program, "traceray", &err);
-	err = kernel.setArg(0, cam->pos().cl_type());
+	err = kernel.setArg(0, cam->pos().gpu_type());
 	if (err != CL_SUCCESS) std::cout << "arg4 error: " << err << std::endl;
 	err = kernel.setArg(1, cl_read_rays);
 	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;

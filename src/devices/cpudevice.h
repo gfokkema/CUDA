@@ -12,10 +12,10 @@ public:
 
 	int init();
 
-	int produceray(Camera* cam, cl_float4*& raydirs);
-	int traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer);
+	int produceray(Camera* cam, float4*& raydirs);
+	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
 private:
-	unsigned char intersect(Vector origin, Vector dir, cl_shape shape);
+	unsigned char intersect(Vector origin, Vector dir, shape shape);
 };
 
 #endif /* CPUDEVICE_H_ */
