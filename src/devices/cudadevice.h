@@ -3,11 +3,7 @@
 
 #include "devices/cpudevice.h"
 
-typedef cl_float4 float4;
-
-extern "C" {
-	int cudaproduceray(const cl_camera cam, float4*& raydirs);
-}
+extern "C" int cudaproduceray(camera cam, float4*& raydirs);
 
 class CUDADevice : public CPUDevice {
 public:
@@ -16,8 +12,8 @@ public:
 
 	int init();
 
-	int produceray(Camera* cam, cl_float4*& raydirs);
-	//int traceray(Camera* cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer);
+	int produceray(Camera* cam, float4*& raydirs);
+	//int traceray(Camera* cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
 };
 
 #endif /* CUDADEVICE_H_ */
