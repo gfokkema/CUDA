@@ -11,7 +11,7 @@
 
 namespace {
 	GLFWwindow* window;
-	Camera camera(WIDTH, HEIGHT);
+	Camera cam(WIDTH, HEIGHT);
 	Device* device = new OpenCL;
 	Scene scene(device);
 
@@ -50,7 +50,7 @@ namespace {
 			if (dx == 0.f && dy == 0.f) return;
 
 			std::cout << x << ", " << y << std::endl;
-			camera.lookAt(x, HEIGHT - y);
+			cam.lookAt(x, HEIGHT - y);
 		}
 		glfwSetCursorPos(window, middle_x, middle_y);
 	}
@@ -59,10 +59,10 @@ namespace {
 	* Time dependent keyboard function
 	*/
 	void handle_keyboard(float dt) {
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) camera.strafe(-1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) camera.strafe(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) camera.move(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) camera.move(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) cam.strafe(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cam.strafe(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) cam.move(1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) cam.move(-1.f, dt);
 	}
 
 	void handle_input(float dt) {
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	scene.setCamera(&camera);
+	scene.setCamera(&cam);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);

@@ -8,7 +8,7 @@
 
 Scene::Scene(Device* device) : _cam(nullptr), _device(device) {
 	// Initialize shapes here.
-	_shapes.push_back(cl_shape { { Vector(0,0,-3).cl_type(), .2 }, SPHERE });
+	_shapes.push_back(shape { { Vector(0,0,-3).gpu_type(), .2 }, SPHERE });
 }
 
 Scene::~Scene() {
@@ -28,7 +28,7 @@ void Scene::render(unsigned char* buffer) {
 
 	std::clock_t c_start = std::clock();
 
-	cl_float4* gpuraydirs;
+	float4* gpuraydirs;
 	_device->produceray(_cam, gpuraydirs);
 	_device->traceray(_cam, gpuraydirs, _shapes, buffer);
 

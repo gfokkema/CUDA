@@ -22,7 +22,7 @@ public:
 private:
 	Camera* _cam;
 	Device* _device;
-	std::vector<cl_shape> _shapes;
+	std::vector<shape> _shapes;
 };
 
 #endif /* SCENE_H_ */

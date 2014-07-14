@@ -13,8 +13,8 @@ public:
 	int init();
 	int load(std::string kernel_path);
 
-	int produceray(Camera* cam, cl_float4*& raydirs);
-	int traceray(Camera *cam, cl_float4* raydirs, std::vector<cl_shape> shapes, unsigned char*& buffer);
+	int produceray(Camera* cam, float4*& raydirs);
+	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
 
 	cl::CommandQueue queue;
 	cl::Context context;

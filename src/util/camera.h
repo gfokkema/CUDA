@@ -3,13 +3,13 @@
 
 #include "vector.h"
 
-typedef struct cl_camera {
-	cl_int width, height;
-	cl_float4 pos;
-	cl_float4 dir;
-	cl_float4 up;
-	cl_float4 right;
-} cl_camera;
+typedef struct camera {
+	int width, height;
+	float4 pos;
+	float4 dir;
+	float4 up;
+	float4 right;
+} camera;
 
 class Camera {
 public:
@@ -27,11 +27,11 @@ public:
 	const Vector right() const { return _dir % _up * (float(_width) / float(_height)); };
 	const int width() const    { return _width; };
 	const int height() const   { return _height; };
-	const cl_camera cl_type() const { return {	_width, _height,
-												pos().cl_type(),
-												dir().cl_type(),
-												up().cl_type(),
-												right().cl_type() }; };
+	const camera gpu_type() const { return {	_width, _height,
+												pos().gpu_type(),
+												dir().gpu_type(),
+												up().gpu_type(),
+												right().gpu_type() }; };
 private:
 	int _width, _height;
 	Vector _pos;
