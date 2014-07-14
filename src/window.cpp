@@ -115,9 +115,11 @@ int main(int argc, char* argv[]) {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, vbo);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 3, 0, GL_DYNAMIC_DRAW);
 
+	// Set the timer to zero
+	glfwSetTime(0.0);
+	double prev = 0;
+	unsigned frames = 0;
 	do {
-		// Set the timer to zero
-		glfwSetTime(0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Map the buffer and render the scene
@@ -132,10 +134,12 @@ int main(int argc, char* argv[]) {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		double dt = glfwGetTime();
-		handle_input(dt);
-		std::cout << "FPS: " << 1.f / dt << "\r";
+		double cur = glfwGetTime();
+		handle_input(cur - prev);
+
+		std::cout << "FPS: " << ++frames / cur << "\r";
 		std::flush(std::cout);
+		prev = cur;
 	} while(!glfwWindowShouldClose(window));
 
 	std::cout << std::endl;
