@@ -12,7 +12,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera camera(WIDTH, HEIGHT);
-	Device* device = new CPUDevice;
+	Device* device = new OpenCL;
 	Scene scene(device);
 
 	/**
@@ -134,8 +134,11 @@ int main(int argc, char* argv[]) {
 
 		double dt = glfwGetTime();
 		handle_input(dt);
-		std::cout << "FPS: " << 1.f / dt << std::endl;
+		std::cout << "FPS: " << 1.f / dt << "\r";
+		std::flush(std::cout);
 	} while(!glfwWindowShouldClose(window));
+
+	std::cout << std::endl;
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

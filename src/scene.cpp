@@ -33,7 +33,7 @@ void Scene::render(unsigned char* buffer) {
 	_device->traceray(_cam, gpuraydirs, _shapes, buffer);
 
 	std::clock_t c_end = std::clock();
-	printf("Test duration (regular): %f ms\n", 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
+	//printf("Test duration (regular): %f ms\n", 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
 
 	delete gpuraydirs;
 }
