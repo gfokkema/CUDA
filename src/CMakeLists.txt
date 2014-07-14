@@ -18,7 +18,7 @@ add_definitions(-std=c++11)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_subdirectory (opencl)
+add_subdirectory (devices)
 add_subdirectory (util)
 add_executable (raytracer scene.cpp window.cpp)
-target_link_libraries (raytracer opencl util ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY} OpenCL)
+target_link_libraries (raytracer devices util ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY} OpenCL)

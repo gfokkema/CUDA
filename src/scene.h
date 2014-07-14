@@ -8,12 +8,12 @@
 
 struct cl_shape;
 class Camera;
-class OpenCL;
+class Device;
 class Ray;
 
 class Scene {
 public:
-	Scene(OpenCL* opencl);
+	Scene(Device* device);
 	virtual ~Scene();
 
 	void setCamera(Camera* cam);
@@ -21,7 +21,7 @@ public:
 	const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
-	OpenCL* _device;
+	Device* _device;
 	std::vector<cl_shape> _shapes;
 };
 

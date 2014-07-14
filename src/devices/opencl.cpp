@@ -4,9 +4,6 @@
 
 #include "opencl.h"
 
-#include "shapes/shape.h"
-#include "util/camera.h"
-
 OpenCL::OpenCL() {}
 
 OpenCL::~OpenCL() {}

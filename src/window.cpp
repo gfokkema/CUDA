@@ -1,7 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "opencl/opencl.h"
+#include "devices/cpudevice.h"
+#include "devices/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
 
@@ -11,8 +12,8 @@
 namespace {
 	GLFWwindow* window;
 	Camera camera(WIDTH, HEIGHT);
-	OpenCL opencl;
-	Scene scene(&opencl);
+	Device* device = new CPUDevice;
+	Scene scene(device);
 
 	/**
 	* Time independent keyboard function
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Initialize OpenCL
-	if (opencl.init() != CL_SUCCESS) {
+	if (device->init() != CL_SUCCESS) {
 		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}

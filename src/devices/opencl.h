@@ -3,11 +3,9 @@
 
 #include <CL/cl.hpp>
 
-#include "shapes/shape.h"
+#include "devices/device.h"
 
-class Camera;
-
-class OpenCL {
+class OpenCL : public Device {
 public:
 	OpenCL();
 	virtual ~OpenCL();

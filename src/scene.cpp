@@ -2,11 +2,11 @@
 
 #include "scene.h"
 
-#include "opencl/opencl.h"
+#include "devices/device.h"
 #include "util/camera.h"
 #include "util/ray.h"
 
-Scene::Scene(OpenCL* opencl) : _cam(nullptr), _device(opencl) {
+Scene::Scene(Device* device) : _cam(nullptr), _device(device) {
 	// Initialize shapes here.
 	_shapes.push_back(cl_shape { { Vector(0,0,-3).cl_type(), .2 }, SPHERE });
 }
