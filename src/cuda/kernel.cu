@@ -2,6 +2,27 @@
 
 #include <stdio.h>
 
+cudaEvent_t start, stop;
+float timer;
+
+__host__
+void starttimer() {
+	float time;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start);
+}
+
+__host__
+void stoptimer(char* text) {
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&timer, start, stop);
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+	printf(text, timer);
+}
+
 __device__
 unsigned char intersect(__const__ float4 origin, float4 dir, shape shape)
 {
@@ -32,56 +53,51 @@ unsigned char intersect(__const__ float4 origin, float4 dir, shape shape)
 
 __global__
 void produceray(__const__ camera cam, float4* raydirs) {
-	int yi = blockIdx.x;
-
-	unsigned offset = yi * cam.width;
+	unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
 
 	float invwidth = 1.f / cam.width;
 	float invheight = 1.f / cam.height;
 
-	for (int xi = 0; xi < cam.width; xi++) {
-		float x = (xi + .5) * invwidth - 0.5;
-		float y = (yi + .5) * invheight - 0.5;
+	float x = (xi + .5) * invwidth - 0.5;
+	float y = (yi + .5) * invheight - 0.5;
 
-		raydirs[offset + xi] = normalize(x * cam.right + y * cam.up + cam.dir);
-	}
+	raydirs[yi * cam.width + xi] = normalize(x * cam.right + y * cam.up + cam.dir);
 }
 
 __host__
-int cudaproduceray(camera cam, float4*& raydirs) {
+int cudaproduceray(camera cam, float4*& d_raydirs) {
+	starttimer();
 	unsigned size = cam.height * cam.width;
 
-	float4* d_raydirs;
 	cudaMalloc(&d_raydirs, size * sizeof(float4));
 
 	// Perform computation on device
-	produceray <<< cam.height,1 >>> (cam, d_raydirs);
-
-	// Read Results
-	raydirs = new float4[size];
-	cudaMemcpy(raydirs, d_raydirs, size * sizeof(float4), cudaMemcpyDeviceToHost);
-	cudaFree(d_raydirs);
+	dim3 threadsperblock(8, 8);
+	dim3 numblocks(	cam.width / threadsperblock.x,
+					cam.height / threadsperblock.y);
+	produceray <<< numblocks,threadsperblock >>> (cam, d_raydirs);
 
 	return 0;
 }
 
 __global__
-void traceray(__const__ float4 origin, float4* read_rays, shape* read_shapes, unsigned char* write_buffer)
+void traceray(__const__ camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer)
 {
-	int idx = threadIdx.x + blockIdx.x * blockDim.x;
-	write_buffer[3 * idx] = intersect(origin, read_rays[idx], read_shapes[0]);
+	int xi = blockIdx.x * blockDim.x + threadIdx.x;
+	int yi = blockIdx.y * blockDim.y + threadIdx.y;
+
+	unsigned idx = (yi * cam.width + xi);
+	write_buffer[3 * idx] = intersect(cam.pos, read_rays[idx], read_shapes[0]);
 	write_buffer[3 * idx + 1] = 0;
 	write_buffer[3 * idx + 2] = 0;
 }
 
 __host__
-int cudatraceray(camera cam, float4* raydirs, shape* read_shapes, unsigned char*& buffer) {
+int cudatraceray(camera cam, float4* d_raydirs, shape* read_shapes, unsigned char*& buffer) {
 	unsigned size = cam.height * cam.width;
 
-	float4* d_raydirs;
 	shape* d_shapes;
-	cudaMalloc(&d_raydirs, size * sizeof(float4));
-	cudaMemcpy(d_raydirs, raydirs, size * sizeof(float4), cudaMemcpyHostToDevice);
 	cudaMalloc(&d_shapes, sizeof(shape));
 	cudaMemcpy(d_shapes, read_shapes, sizeof(shape), cudaMemcpyHostToDevice);
 
@@ -89,10 +105,14 @@ int cudatraceray(camera cam, float4* raydirs, shape* read_shapes, unsigned char*
 	cudaMalloc(&d_buffer, 3 * size * sizeof(unsigned char));
 
 	// Perform computation on device
-	traceray <<< cam.height,cam.width >>> (cam.pos, d_raydirs, d_shapes, d_buffer);
+	dim3 threadsperblock(8, 8);
+	dim3 numblocks(	cam.width / threadsperblock.x,
+					cam.height / threadsperblock.y);
+	traceray <<< numblocks,threadsperblock >>> (cam, d_raydirs, d_shapes, d_buffer);
 
 	// Read results
 	cudaMemcpy(buffer, d_buffer, 3 * size * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+	stoptimer("total time: %f\n");
 
 	cudaFree(d_raydirs);
 	cudaFree(d_shapes);
