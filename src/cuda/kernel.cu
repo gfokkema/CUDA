@@ -70,6 +70,8 @@ void traceray(__const__ float4 origin, float4* read_rays, shape* read_shapes, un
 {
 	int idx = threadIdx.x + blockIdx.x * blockDim.x;
 	write_buffer[3 * idx] = intersect(origin, read_rays[idx], read_shapes[0]);
+	write_buffer[3 * idx + 1] = 0;
+	write_buffer[3 * idx + 2] = 0;
 }
 
 __host__
