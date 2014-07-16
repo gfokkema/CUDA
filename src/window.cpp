@@ -13,7 +13,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-	Device* device = new OpenCL;
+	Device* device = new CUDADevice;
 	Scene scene(device);
 
 	/**

@@ -7,7 +7,7 @@ find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (CUDA)
 IF (CUDA_FOUND)
-	list (APPEND CUDA_NVCC_FLAGS "-arch=compute_20; -code=sm_20")
+	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
 	add_subdirectory (cuda)
 ENDIF (CUDA_FOUND)
 
