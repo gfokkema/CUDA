@@ -1,6 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <unistd.h>
+
 #include "devices/cudadevice.h"
 #include "devices/cpudevice.h"
 #include "devices/opencl.h"
@@ -103,6 +105,7 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}
+	usleep(20000);
 
 	scene.setCamera(&cam);
 
