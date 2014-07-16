@@ -148,5 +148,7 @@ int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, un
 	err = this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, 3 * size * sizeof(unsigned char), buffer);
 	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
 
+	delete raydirs;
+
 	return CL_SUCCESS;
 }

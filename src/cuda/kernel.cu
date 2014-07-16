@@ -56,18 +56,14 @@ void produceray(__const__ camera cam, float4* raydirs) {
 	unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
 
-	float invwidth = 1.f / cam.width;
-	float invheight = 1.f / cam.height;
-
-	float x = (xi + .5) * invwidth - 0.5;
-	float y = (yi + .5) * invheight - 0.5;
+	float x = (xi + .5) / cam.width - 0.5;
+	float y = (yi + .5) / cam.height - 0.5;
 
 	raydirs[yi * cam.width + xi] = normalize(x * cam.right + y * cam.up + cam.dir);
 }
 
 __host__
 int cudaproduceray(camera cam, float4*& d_raydirs) {
-	starttimer();
 	unsigned size = cam.height * cam.width;
 
 	cudaMalloc(&d_raydirs, size * sizeof(float4));
@@ -77,6 +73,7 @@ int cudaproduceray(camera cam, float4*& d_raydirs) {
 	dim3 numblocks(	cam.width / threadsperblock.x,
 					cam.height / threadsperblock.y);
 	produceray <<< numblocks,threadsperblock >>> (cam, d_raydirs);
+	cudaDeviceSynchronize();
 
 	return 0;
 }
@@ -112,7 +109,6 @@ int cudatraceray(camera cam, float4* d_raydirs, shape* read_shapes, unsigned cha
 
 	// Read results
 	cudaMemcpy(buffer, d_buffer, 3 * size * sizeof(unsigned char), cudaMemcpyDeviceToHost);
-	stoptimer("total time: %f\n");
 
 	cudaFree(d_raydirs);
 	cudaFree(d_shapes);

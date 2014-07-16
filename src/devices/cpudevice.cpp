@@ -31,6 +31,7 @@ int CPUDevice::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes,
 			buffer[i * 3] = intersect(cam->pos().gpu_type(), raydirs[i], shape);
 		}
 	}
+	delete raydirs;
 }
 
 unsigned char CPUDevice::intersect(Vector origin, Vector dir, shape shape) {

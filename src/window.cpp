@@ -142,8 +142,8 @@ int main(int argc, char* argv[]) {
 		double cur = glfwGetTime();
 		handle_input(cur - prev);
 
-		std::cout << "FPS: " << ++frames / cur << "\r";
-		std::flush(std::cout);
+		//std::cout << "FPS: " << ++frames / cur << "\r";
+		//std::flush(std::cout);
 		prev = cur;
 	} while(!glfwWindowShouldClose(window));
 
