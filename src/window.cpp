@@ -87,6 +87,9 @@ int main(int argc, char* argv[]) {
 
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
+	// FIXME:	glfwCreateWindow causes the race condition!
+	// 			Find a way to block until succesfull window creation...
+	usleep(10000);
 	if( window == NULL ){
 		std::cerr << "Failed to open GLFW window.\n" << std::endl;
 		glfwTerminate();
@@ -105,7 +108,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}
-	usleep(20000);
 
 	scene.setCamera(&cam);
 

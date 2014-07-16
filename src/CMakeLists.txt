@@ -9,7 +9,7 @@ find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (CUDA)
 IF (CUDA_FOUND)
-	list (APPEND CUDA_NVCC_FLAGS "-arch=compute_20; -code=sm_20")
+	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
 	add_subdirectory (cuda)
 	add_definitions(-DCUDA_FOUND)
 ELSE (CUDA_FOUND) #CUDA not found, look for OpenCL
@@ -25,7 +25,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_definitions(-w)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -O3)
 
 include_directories(${CMAKE_SOURCE_DIR})
 

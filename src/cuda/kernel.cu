@@ -73,7 +73,6 @@ int cudaproduceray(camera cam, float4*& d_raydirs) {
 	dim3 numblocks(	cam.width / threadsperblock.x,
 					cam.height / threadsperblock.y);
 	produceray <<< numblocks,threadsperblock >>> (cam, d_raydirs);
-	cudaDeviceSynchronize();
 
 	return 0;
 }
