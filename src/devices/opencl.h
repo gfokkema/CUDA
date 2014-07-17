@@ -1,7 +1,11 @@
 #ifndef OPENCL_H_
 #define OPENCL_H_
 
-#include <CL/cl.hpp>
+#ifdef __APPLE__
+  #include <OpenCL/cl.hpp>
+#else
+  #include <CL/cl.hpp>
+#endif
 
 #include "devices/device.h"
 
