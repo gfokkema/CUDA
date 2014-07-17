@@ -56,7 +56,6 @@ namespace {
 			double dy = y - middle_y;
 			if (dx == 0.f && dy == 0.f) return;
 
-			std::cout << x << ", " << y << std::endl;
 			cam.lookAt(x, HEIGHT - y);
 		}
 		glfwSetCursorPos(window, middle_x, middle_y);
