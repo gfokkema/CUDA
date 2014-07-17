@@ -12,10 +12,10 @@ IF (CUDA_FOUND)
 	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
 	add_subdirectory (cuda)
 	add_definitions(-DCUDA_FOUND)
-ELSE (CUDA_FOUND) #CUDA not found, look for OpenCL
-	find_package (OpenCL REQUIRED)
-	include_directories (${OPENCL_INCLUDE_DIR})
-ENDIF (CUDA_FOUND)
+ENDIF (CUDA_FOUND) #CUDA not found, look for OpenCL
+
+find_package (OpenCL REQUIRED)
+include_directories (${OPENCL_INCLUDE_DIR})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	include_directories(/opt/X11/include)
