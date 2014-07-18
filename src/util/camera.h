@@ -16,7 +16,7 @@ typedef struct camera {
 class Camera {
 public:
 	Camera(int width, int height, float angle = 45, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
-		: _width(width), _height(height), _pos(pos), _dir(dir), _right(_right = {tanf(angle / 360 * 2 * M_PI), 0, 0}) {}
+		: _width(width), _height(height), _pos(pos), _dir(dir), _right{tanf(angle / 360 * 2 * M_PI), 0, 0} {}
 	~Camera() {};
 
 	void strafe(float velocity, float dt);

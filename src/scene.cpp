@@ -20,12 +20,6 @@ void Scene::setCamera(Camera* cam) {
 }
 
 void Scene::render(unsigned char* buffer) {
-	Vector up = _cam->up();
-	Vector right = _cam->right();
-	Vector pos = _cam->pos();
-	Vector dir = _cam->dir();
-
-
 	std::clock_t c_start = std::clock();
 
 	float4* gpuraydirs;
