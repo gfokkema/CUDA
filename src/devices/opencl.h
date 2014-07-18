@@ -7,6 +7,8 @@
   #include <CL/cl.hpp>
 #endif
 
+#include <vector>
+
 #include "devices/device.h"
 
 class OpenCL : public Device {
@@ -15,7 +17,7 @@ public:
 	virtual ~OpenCL();
 
 	int init();
-	int load(std::string kernel_path);
+	int load(std::vector<std::string> source_paths);
 
 	int produceray(Camera* cam, float4*& raydirs);
 	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);

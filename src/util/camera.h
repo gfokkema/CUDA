@@ -5,14 +5,6 @@
 
 #include "vector.h"
 
-typedef struct camera {
-	int width, height;
-	float4 pos;
-	float4 dir;
-	float4 up;
-	float4 right;
-} camera;
-
 class Camera {
 public:
 	Camera(int width, int height, float angle = 45, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))

@@ -47,28 +47,41 @@ int OpenCL::init() {
 	queue = cl::CommandQueue(context, device, 0, &err);
 	if (err != CL_SUCCESS) return err;
 
-	err = this->load("../src/kernel/kernel.cl");
+	std::vector<std::string> source_paths;
+	source_paths.push_back("../src/util/gpu_types.h");
+	source_paths.push_back("../src/kernel/kernel.cl");
+
+	err = this->load(source_paths);
 	if (err != CL_SUCCESS) return err;
 
 	return CL_SUCCESS;
 }
 
-int OpenCL::load(std::string kernel_path) {
-	std::ifstream file(kernel_path);
-	std::stringstream buffer;
-	std::string strbuffer;
+int OpenCL::load(std::vector<std::string> source_paths) {
+	cl::Program::Sources source;
 
-	buffer << file.rdbuf();
-	strbuffer = buffer.str();
-	const char* txt_source = strbuffer.c_str();
+	std::vector<std::string> txt_sources;
+	for (std::string source_path : source_paths) {
+		std::ifstream file(source_path);
+		std::stringstream buffer;
+		std::string strbuffer;
 
-	cl::Program::Sources source(1, std::make_pair(txt_source, strlen(txt_source)));
+		buffer << file.rdbuf();
+		strbuffer = buffer.str();
+		const char* txt_source = strbuffer.c_str();
+
+		source.push_back(std::make_pair(txt_source, strlen(txt_source)));
+		txt_sources.push_back(strbuffer);
+	}
+
 	program = cl::Program(context, source);
 
 	std::cout << "--------------------------" << std::endl;
 	std::cout << "--- source code loaded ---" << std::endl;
-	std::cout << source[0].first << std::endl;
-	std::cout << "--------------------------" << std::endl;
+	for (std::pair<std::string, int> txt_source : source) {
+		std::cout << txt_source.first << std::endl;
+		std::cout << "--------------------------" << std::endl;
+	}
 
 	cl_int err;
 	std::vector<cl::Device> devices(1, device);

@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "shapes/shape.h"
 #include "util/vector.h"
 
 struct cl_shape;
