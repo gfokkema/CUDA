@@ -6,7 +6,32 @@ unsigned char
 intersect(
 		__const float4 origin,
 		float4 dir,
-		shape shape);
+		shape shape)
+{
+	float4 trans_origin = origin - shape.sphere.origin;
+	float a = dot(dir, dir);
+	float b = 2 * dot(trans_origin, dir);
+	float c = dot(trans_origin, trans_origin) - dot(shape.sphere.radius, shape.sphere.radius);
+
+	float disc = b * b - 4 * a * c;
+	if (disc < 0)	return 0;
+
+	// We use the following in place of the quadratic formula for
+	// more numeric precision.
+	float q = (b > 0) ?
+				-0.5 * (b + sqrt(disc)) :
+				-0.5 * (b - sqrt(disc));
+	float t0 = q / a;
+	float t1 = c / q;
+	//if (t0 < t1) swap(t0,t1);
+
+	float t;
+	if (t0 < EPSILON)	return 0;
+	if (t1 < 0)		t = t0;
+	else			t = t1;
+
+	return 255;
+}
 
 __kernel void
 produceray(
@@ -36,35 +61,6 @@ traceray(
 {
 	int idx = get_global_id(0);
 	write_buffer[idx * 3] = intersect(origin, read_rays[idx], read_shapes[0]);
-}
-
-unsigned char
-intersect(
-		__const float4 origin,
-		float4 dir,
-		shape shape)
-{
-	float4 trans_origin = origin - shape.sphere.origin;
-	float a = dot(dir, dir);
-	float b = 2 * dot(trans_origin, dir);
-	float c = dot(trans_origin, trans_origin) - dot(shape.sphere.radius, shape.sphere.radius);
-
-	float disc = b * b - 4 * a * c;
-	if (disc < 0)	return 0;
-
-	// We use the following in place of the quadratic formula for
-	// more numeric precision.
-	float q = (b > 0) ?
-				-0.5 * (b + sqrt(disc)) :
-				-0.5 * (b - sqrt(disc));
-	float t0 = q / a;
-	float t1 = c / q;
-	//if (t0 < t1) swap(t0,t1);
-
-	float t;
-	if (t0 < EPSILON)	return 0;
-	if (t1 < 0)		t = t0;
-	else			t = t1;
-
-	return 255;
+	write_buffer[idx * 3 + 1] = 0;
+	write_buffer[idx * 3 + 2] = 0;
 }

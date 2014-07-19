@@ -9,21 +9,16 @@ OpenCL::OpenCL() {}
 OpenCL::~OpenCL() {}
 
 int OpenCL::init() {
-	cl_int err;
 	std::vector<cl::Platform> platforms;
-
-	err = cl::Platform::get(&platforms);
-	if (err != CL_SUCCESS) return err;
+	SAFE(cl::Platform::get(&platforms));
 
 	float max_ver;
 	for (int i = 0; i < platforms.size(); i++) {
 		std::vector<cl::Device> devices;
-		err = platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-		if (err != CL_SUCCESS) continue;
+		SAFE(platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices));
 
 		std::string version;
-		err = platforms[i].getInfo(CL_PLATFORM_VERSION, &version);
-		if (err != CL_SUCCESS) continue;
+		SAFE(platforms[i].getInfo(CL_PLATFORM_VERSION, &version));
 
 		float ver = atof(version.substr(7,3).c_str());
 		if (ver > max_ver && devices.size() > 0) {
@@ -33,26 +28,20 @@ int OpenCL::init() {
 	}
 
 	std::string platversion, devicename;
-	err = device.getInfo(CL_DEVICE_VERSION, &platversion);
-	if (err != CL_SUCCESS) return err;
-	err = device.getInfo(CL_DEVICE_NAME, &devicename);
-	if (err != CL_SUCCESS) return err;
+	SAFE(device.getInfo(CL_DEVICE_VERSION, &platversion));
+	SAFE(device.getInfo(CL_DEVICE_NAME, &devicename));
 
 	std::cout << "Selected platform:\t" << platversion << std::endl;
 	std::cout << "Selected device:\t" << devicename << std::endl;
 
-	context = cl::Context(device, 0, 0, 0, &err);
-	if (err != CL_SUCCESS) return err;
-
-	queue = cl::CommandQueue(context, device, 0, &err);
-	if (err != CL_SUCCESS) return err;
+	SAFE_REF(context = cl::Context(device, 0, 0, 0, &err));
+	SAFE_REF(queue = cl::CommandQueue(context, device, 0, &err));
 
 	std::vector<std::string> source_paths;
 	source_paths.push_back("../src/util/gpu_types.h");
 	source_paths.push_back("../src/kernel/kernel.cl");
 
-	err = this->load(source_paths);
-	if (err != CL_SUCCESS) return err;
+	SAFE(this->load(source_paths));
 
 	return CL_SUCCESS;
 }
@@ -74,92 +63,67 @@ int OpenCL::load(std::vector<std::string> source_paths) {
 		txt_sources.push_back(strbuffer);
 	}
 
-	program = cl::Program(context, source);
+	SAFE_REF(program = cl::Program(context, source, &err));
 
-	std::cout << "--------------------------" << std::endl;
-	std::cout << "--- source code loaded ---" << std::endl;
-	for (std::pair<std::string, int> txt_source : source) {
-		std::cout << txt_source.first << std::endl;
-		std::cout << "--------------------------" << std::endl;
-	}
-
-	cl_int err;
 	std::vector<cl::Device> devices(1, device);
-	err = program.build(devices, 0, 0, 0);
-	if (err != CL_SUCCESS) {
-		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) << std::endl;
-		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
-		return err;
-	}
+	SAFE_BUILD(program.build(devices, 0, 0, 0));
 
-	std::cout << "--- BUILD SUCCESS ---" << std::endl;
 	return CL_SUCCESS;
 }
 
 int OpenCL::produceray(Camera* cam, float4*& raydirs) {
-	cl_int err;
 	unsigned size = cam->width() * cam->height();
+	cl::Buffer cl_write;
+	cl::Kernel kernel;
 
 	// Initialize write buffer
-	cl::Buffer cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, size * sizeof(cl_float4));
+	SAFE_REF(cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, size * sizeof(cl_float4), 0, &err));
 
 	// Initialize kernel
-	cl::Kernel kernel(program, "produceray", &err);
-	err = kernel.setArg(0, cl_write);
-	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;
-	err = kernel.setArg(1, cam->gpu_type());
-	if (err != CL_SUCCESS) std::cout << "arg2 error: " << err << std::endl;
+	SAFE_REF(kernel = cl::Kernel(program, "produceray", &err));
+	SAFE(kernel.setArg(0, cl_write));
+	SAFE(kernel.setArg(1, cam->gpu_type()));
 
 	// Enqueue kernel
 	cl::NDRange global(cam->height());
-	err = this->queue.enqueueNDRangeKernel(kernel, 0, global);
-	if (err != CL_SUCCESS) std::cout << "kernel error: " << err << std::endl;
-	err = this->queue.finish();
-	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
+	SAFE(this->queue.enqueueNDRangeKernel(kernel, 0, global));
+	SAFE(this->queue.finish());
 
 	// Read results
 	raydirs = new float4[size];
-	err = this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, size * sizeof(float4), raydirs);
-	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
+	SAFE(this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, size * sizeof(float4), raydirs));
 
 	return CL_SUCCESS;
 }
 
 int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
-	cl_int err;
 	unsigned size = cam->width() * cam->height();
+	cl::Buffer cl_read_rays;
+	cl::Buffer cl_read_shapes;
+	cl::Buffer cl_write;
+	cl::Kernel kernel;
 
-	cl::Buffer cl_read_rays = cl::Buffer(this->context, CL_MEM_READ_ONLY, size * sizeof(float4));
-	cl::Buffer cl_read_shapes = cl::Buffer(this->context, CL_MEM_READ_ONLY, shapes.size() * sizeof(shape));
-	// Initialize write buffer
-	cl::Buffer cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, 3 * size * sizeof(unsigned char));
+	SAFE_REF(cl_read_rays = cl::Buffer(this->context, CL_MEM_READ_ONLY, size * sizeof(float4), 0, &err));
+	SAFE_REF(cl_read_shapes = cl::Buffer(this->context, CL_MEM_READ_ONLY, shapes.size() * sizeof(shape), 0, &err));
+	SAFE_REF(cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, 3 * size * sizeof(unsigned char), 0, &err));
 
-	err = this->queue.enqueueWriteBuffer(cl_read_rays, CL_TRUE, 0, size * sizeof(float4), raydirs);
-	if (err != CL_SUCCESS) std::cout << "cl_read_rays error: " << err << std::endl;
-	err = this->queue.enqueueWriteBuffer(cl_read_shapes, CL_TRUE, 0, shapes.size() * sizeof(shape), shapes.data());
-	if (err != CL_SUCCESS) std::cout << "cl_read_shapes error: " << err << std::endl;
+	SAFE(this->queue.enqueueWriteBuffer(cl_read_rays, CL_TRUE, 0, size * sizeof(float4), raydirs));
+	SAFE(this->queue.enqueueWriteBuffer(cl_read_shapes, CL_TRUE, 0, shapes.size() * sizeof(shape), shapes.data()));
 
 	// Initialize kernel
-	cl::Kernel kernel(program, "traceray", &err);
-	err = kernel.setArg(0, cam->pos().gpu_type());
-	if (err != CL_SUCCESS) std::cout << "arg4 error: " << err << std::endl;
-	err = kernel.setArg(1, cl_read_rays);
-	if (err != CL_SUCCESS) std::cout << "arg1 error:" << err << std::endl;
-	err = kernel.setArg(2, cl_read_shapes);
-	if (err != CL_SUCCESS) std::cout << "arg2 error: " << err << std::endl;
-	err = kernel.setArg(3, cl_write);
-	if (err != CL_SUCCESS) std::cout << "arg3 error: " << err << std::endl;
+	SAFE_REF(kernel = cl::Kernel(program, "traceray", &err));
+	SAFE(kernel.setArg(0, cam->pos().gpu_type()));
+	SAFE(kernel.setArg(1, cl_read_rays));
+	SAFE(kernel.setArg(2, cl_read_shapes));
+	SAFE(kernel.setArg(3, cl_write));
 
 	// Enqueue kernel
 	cl::NDRange global(size);
-	err = this->queue.enqueueNDRangeKernel(kernel, 0, global);
-	if (err != CL_SUCCESS) std::cout << "kernel error: " << err << std::endl;
-	err = this->queue.finish();
-	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
+	SAFE(this->queue.enqueueNDRangeKernel(kernel, 0, global));
+	SAFE(this->queue.finish());
 
 	// Read results
-	err = this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, 3 * size * sizeof(unsigned char), buffer);
-	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
+	SAFE(this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, 3 * size * sizeof(unsigned char), buffer));
 
 	delete raydirs;
 
