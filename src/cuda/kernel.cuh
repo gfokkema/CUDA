@@ -1,9 +1,27 @@
 #ifndef __KERNEL_CUH
 #define __KERNEL_CUH
 
+#include <cuda_runtime.h>
 #include "../util/gpu_types.h"
 
 #define EPSILON 1e-4
+
+#define SAFE( call) {                                                   \
+	cudaError err = call;                                               \
+	if( cudaSuccess != err) {                                           \
+		fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",   \
+				__FILE__, __LINE__, cudaGetErrorString( err) );         \
+				exit(EXIT_FAILURE);                                     \
+	}                                                                   \
+}
+#define CHECK_ERROR(errorMessage) {                                             \
+	cudaError_t err = cudaGetLastError();                                       \
+	if( cudaSuccess != err) {                                                   \
+		fprintf(stderr, "Cuda error: %s in file '%s' in line %i : %s.\n",       \
+				errorMessage, __FILE__, __LINE__, cudaGetErrorString( err) );   \
+				exit(EXIT_FAILURE);                                             \
+	}                                                                           \
+}
 
 __device__
 float4 operator+(const float4& lhs, const float4& rhs) {

@@ -66,13 +66,14 @@ __host__
 int cudaproduceray(camera cam, float4*& d_raydirs) {
 	unsigned size = cam.height * cam.width;
 
-	cudaMalloc(&d_raydirs, size * sizeof(float4));
+	SAFE(cudaMalloc(&d_raydirs, size * sizeof(float4)));
 
 	// Perform computation on device
 	dim3 threadsperblock(8, 8);
 	dim3 numblocks(	cam.width / threadsperblock.x,
 					cam.height / threadsperblock.y);
 	produceray <<< numblocks,threadsperblock >>> (cam, d_raydirs);
+	CHECK_ERROR("Launching produce kernel");
 
 	return 0;
 }
@@ -94,20 +95,21 @@ int cudatraceray(camera cam, float4* d_raydirs, shape* read_shapes, unsigned cha
 	unsigned size = cam.height * cam.width;
 
 	shape* d_shapes;
-	cudaMalloc(&d_shapes, sizeof(shape));
-	cudaMemcpy(d_shapes, read_shapes, sizeof(shape), cudaMemcpyHostToDevice);
+	SAFE(cudaMalloc(&d_shapes, sizeof(shape)));
+	SAFE(cudaMemcpy(d_shapes, read_shapes, sizeof(shape), cudaMemcpyHostToDevice));
 
 	unsigned char* d_buffer;
-	cudaMalloc(&d_buffer, 3 * size * sizeof(unsigned char));
+	SAFE(cudaMalloc(&d_buffer, 3 * size * sizeof(unsigned char)));
 
 	// Perform computation on device
 	dim3 threadsperblock(8, 8);
 	dim3 numblocks(	cam.width / threadsperblock.x,
 					cam.height / threadsperblock.y);
 	traceray <<< numblocks,threadsperblock >>> (cam, d_raydirs, d_shapes, d_buffer);
+	CHECK_ERROR("Launching trace kernel");
 
 	// Read results
-	cudaMemcpy(buffer, d_buffer, 3 * size * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+	SAFE(cudaMemcpy(buffer, d_buffer, 3 * size * sizeof(unsigned char), cudaMemcpyDeviceToHost));
 
 	cudaFree(d_raydirs);
 	cudaFree(d_shapes);
