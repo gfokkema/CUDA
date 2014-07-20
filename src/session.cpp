@@ -6,6 +6,9 @@ RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 {}
 
 void RenderSession::render() {
+	//Time the rendering process
+	std::clock_t c_start = std::clock();
+
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	camera cam = _scene->_cam->gpu_type();
@@ -41,4 +44,8 @@ void RenderSession::render() {
 	// Read the buffer.
 	_device->read(buffer, 3 * cam_size * sizeof(unsigned char), buffer_result);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+	std::clock_t c_end = std::clock();
+	std::cout << "Frame duration:\t" << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << " ms\r";
+	std::flush(std::cout);
 }
