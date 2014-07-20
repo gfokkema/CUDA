@@ -4,6 +4,8 @@ Rendersession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 {}
 
 void RenderSession::render() {
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	camera cam = _scene->_cam.gpu_type();
 	size_t size = _scene->_cam->size();
 	// Allocate memory on the device

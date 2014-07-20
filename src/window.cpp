@@ -20,7 +20,8 @@ namespace {
 #else
 	Device* device = new OpenCL;
 #endif
-	Scene scene(device);
+	Scene scene = new Scene(device);
+	RenderSession session(device, scene);
 
 	/**
 	* Time independent keyboard function
@@ -129,18 +130,8 @@ int main(int argc, char* argv[]) {
 	double prev = 0;
 	unsigned frames = 0;
 	do {
-		glClear(GL_COLOR_BUFFER_BIT);
+		session->render();
 
-		// Map the buffer and render the scene
-		unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-		scene.render(buffer);
-		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-		// Draw the buffer onto the off screen buffer
-		glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-		// Swap buffers
-		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		double cur = glfwGetTime();
