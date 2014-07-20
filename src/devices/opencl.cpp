@@ -10,49 +10,59 @@ OpenCL::~OpenCL() {}
 
 int OpenCL::init() {
 	cl_int err;
-	std::vector<cl::Platform> platforms;
-	cl::Device device_cpp;
-	cl::CommandQueue commands_cpp;
-	cl::Context context_cpp;
+	cl_uint num_plats;
+	cl_platform_id *plat;
 
-	err = cl::Platform::get(&platforms);
-	if (err != CL_SUCCESS) return err;
+	err = clGetPlatformIDs(0, NULL, &num_plats);
+	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+
+	plat = (cl_platform_id*) ::malloc(sizeof(cl_platform_id) * num_plats);
+	err = clGetPlatformIDs(num_plats, plat, NULL);
+	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 
 	float max_ver;
-	for (int i = 0; i < platforms.size(); i++) {
-		std::vector<cl::Device> devices;
-		err = platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-		if (err != CL_SUCCESS) continue;
+	for (int i = 0; i < num_plats; i++) {
+		cl_uint num_devices;
+		size_t plat_info_length;
 
-		std::string version;
-		err = platforms[i].getInfo(CL_PLATFORM_VERSION, &version);
-		if (err != CL_SUCCESS) continue;
+		err = clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 
+		cl_device_id devices[num_devices];
+		err = clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
+		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+
+		err = clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length);
+		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+
+		char plat_version[plat_info_length];
+		err = clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, plat_info_length, plat_version, NULL);
+		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+
+		std::string version(plat_version);
+		std::cout << version << std::endl;
 		float ver = atof(version.substr(7,3).c_str());
-		if (ver > max_ver && devices.size() > 0) {
+		if (ver > max_ver && num_devices > 0) {
 			max_ver = ver;
-			device_cpp = devices[0];
+			device = devices[0];
 		}
 	}
 
-	std::string platversion, devicename;
-	err = device_cpp.getInfo(CL_DEVICE_VERSION, &platversion);
-	if (err != CL_SUCCESS) return err;
-	err = device_cpp.getInfo(CL_DEVICE_NAME, &devicename);
-	if (err != CL_SUCCESS) return err;
+	char device_name[256];
+	clGetDeviceInfo(device, CL_DEVICE_NAME, 256, device_name, NULL);
+	char device_version[256];
+	clGetDeviceInfo(device, CL_DEVICE_VERSION, 256, device_version, NULL);
 
-	std::cout << "Selected platform:\t" << platversion << std::endl;
-	std::cout << "Selected device:\t" << devicename << std::endl;
+	std::cout << "Selected platform:\t" << device_version << std::endl;
+	std::cout << "Selected device:\t" << device_name << std::endl;
 
-	context_cpp = cl::Context(device_cpp, 0, 0, 0, &err);
-	if (err != CL_SUCCESS) return err;
-
-	commands_cpp = cl::CommandQueue(context_cpp, device_cpp, 0, &err);
+	// Set OpenCL context
+	context = clCreateContext(0, 1, &device, NULL, NULL, &err);
 	if (err != CL_SUCCESS) return err;
 
-	device = device_cpp();
-	commands = commands_cpp();
-	context = context_cpp();
+	// Create command queue
+	commands = clCreateCommandQueue(context, device, 0, &err);
+	if (err != CL_SUCCESS) return err;
 
 	err = this->load_kernels("../src/kernel/kernel.cl");
 	if (err != CL_SUCCESS) return err;
@@ -94,16 +104,6 @@ int OpenCL::load_kernels(std::string kernel_path) {
 	cl_kernel kernel_tr = clCreateKernel(program, "traceray", &err);
 	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 	kernels.push_back(kernel_tr);
-
-	/*
-	std::vector<cl::Device> devices(1, device);
-	err = program.build(devices, 0, 0, 0);
-	if (err != CL_SUCCESS) {
-		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) << std::endl;
-		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
-		return err;
-	}
-	*/
 
 	std::cout << "--- BUILD SUCCESS ---" << std::endl;
 	return CL_SUCCESS;
@@ -227,7 +227,6 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 	cl_int err = 0;
 	for (unsigned int i = 0; i < num_args; i++) {
 		err |= clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]);
-		std::cout << "arg size" << i << ": " << arg_sizes[i] << std::endl;
 		if (err != CL_SUCCESS) {
 			std::cout << "arg" << i << " error:" << err << std::endl;
 			return err;
