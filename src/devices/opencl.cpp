@@ -202,19 +202,20 @@ device_mem OpenCL::malloc(size_t size, permission perm) {
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
 	 */
 	// device_mem
-	return {(uintptr_t)&buff, sizeof(cl_mem)};
+	return {(uintptr_t)buff, sizeof(cl_mem)};
 }
 
 void OpenCL::read(device_mem mem, size_t size, void* data_read) {
-	cl_mem buff = *((cl_mem*)&mem);
+	cl_mem buff = (cl_mem) mem._mem_pointer;
 	cl_int err;
 	err = clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL);
 	if (err != CL_SUCCESS) std::cout << "read error: " << err << std::endl;
 }
 
 void OpenCL::write(device_mem mem, size_t size, void* data_write) {
-	cl_mem buff = *((cl_mem*)&mem);
+	cl_mem buff = (cl_mem) mem._mem_pointer;
 	cl_int err;
+	//std::cout << data_write << std::endl;
 	err = clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL);
 	if (err != CL_SUCCESS) std::cout << "write error: " << err << std::endl;
 }
@@ -224,8 +225,9 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 	if (id >= KERNEL_COUNT)	return CL_INVALID_KERNEL;
 	cl_kernel kernel = kernels[id];
 	cl_int err = 0;
-	for (uint8_t i = 0; i < num_args; i++) {
+	for (unsigned int i = 0; i < num_args; i++) {
 		err |= clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]);
+		std::cout << "arg size" << i << ": " << arg_sizes[i] << std::endl;
 		if (err != CL_SUCCESS) {
 			std::cout << "arg" << i << " error:" << err << std::endl;
 			return err;

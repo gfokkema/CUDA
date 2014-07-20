@@ -15,7 +15,7 @@ void RenderSession::render() {
 	device_mem ray_dirs = _device->malloc(size * sizeof(float4), PERM_READ_WRITE);
 
 	// Arguments: float4* output, cl_camera cam
-	void* pr_arg_values[2] = { &ray_dirs, &cam };
+	void* pr_arg_values[2] = { (void *) &(ray_dirs._mem_pointer), (void *) &cam };
 	size_t pr_arg_sizes[2] = { ray_dirs._mem_size, sizeof(camera) };
 
 	// Blocking call!
@@ -30,7 +30,7 @@ void RenderSession::render() {
 	device_mem buffer = _device->malloc(3 * size * sizeof(unsigned char), PERM_WRITE_ONLY);
 
 	// Arguments: float4 origin, float4* read_rays, shape* read_shapes, unsigned char* write_buffer
-	void* tr_arg_values[4] = { &cam.pos, &ray_dirs, &shapes, &buffer };
+	void* tr_arg_values[4] = { &cam.pos, &ray_dirs._mem_pointer, &shapes._mem_pointer, &buffer._mem_pointer };
 	size_t tr_arg_sizes[4] = { sizeof(float4), ray_dirs._mem_size, shapes._mem_size, buffer._mem_size };
 
 	// Blocking call!
