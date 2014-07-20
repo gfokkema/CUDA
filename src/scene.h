@@ -12,6 +12,7 @@ class Device;
 class Ray;
 
 class Scene {
+friend class RenderSession;
 public:
 	Scene(Device* device);
 	virtual ~Scene();
@@ -21,7 +22,6 @@ public:
 	const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
-	Device* _device;
 	std::vector<shape> _shapes;
 };
 

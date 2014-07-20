@@ -27,6 +27,7 @@ public:
 	const Vector right() const { return _dir % _up * (float(_width) / float(_height)); };
 	const int width() const    { return _width; };
 	const int height() const   { return _height; };
+	const int size() const     { return _height * _width; };
 	const camera gpu_type() const { return {	_width, _height,
 												pos().gpu_type(),
 												dir().gpu_type(),

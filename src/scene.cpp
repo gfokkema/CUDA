@@ -18,21 +18,3 @@ Scene::~Scene() {
 void Scene::setCamera(Camera* cam) {
 	this->_cam = cam;
 }
-
-void Scene::render(unsigned char* buffer) {
-	Vector up = _cam->up();
-	Vector right = _cam->right();
-	Vector pos = _cam->pos();
-	Vector dir = _cam->dir();
-
-
-	std::clock_t c_start = std::clock();
-
-	float4* gpuraydirs;
-	_device->produceray(_cam, gpuraydirs);
-	_device->traceray(_cam, gpuraydirs, _shapes, buffer);
-
-	std::clock_t c_end = std::clock();
-	std::cout << "Frame duration:\t" << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << " ms\r";
-	std::flush(std::cout);
-}

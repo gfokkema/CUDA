@@ -63,7 +63,7 @@ int OpenCL::load(std::string kernel_path) {
 	const char* txt_source = strbuffer.c_str();
 
 	cl::Program::Sources source(1, std::make_pair(txt_source, strlen(txt_source)));
-	program = cl::Program(context, source);
+	cl::Program program(context, source);
 
 	std::cout << "--------------------------" << std::endl;
 	std::cout << "--- source code loaded ---" << std::endl;
@@ -149,6 +149,76 @@ int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, un
 	if (err != CL_SUCCESS) std::cout << "finish error: " << err << std::endl;
 
 	delete raydirs;
+
+	return CL_SUCCESS;
+}
+
+device_mem OpenCL::malloc(size_t size, permission perm) {
+	cl_mem_flags cl_perm;
+	cl_int err;
+	switch (perm) {
+		case PERM_WRITE_ONLY:
+			cl_perm = CL_MEM_WRITE_ONLY;
+			break;
+		case PERM_READ_ONLY:
+			cl_perm = CL_MEM_READ_ONLY;
+			break;
+		case PERM_READ_WRITE:
+			cl_perm = CL_MEM_READ_WRITE;
+			break;
+	}
+	cl_mem buff = clCreateBuffer(context, cl_perm, size, NULL, &err);
+	if (err != CL_SUCCESS) std::cout << "malloc error: " << err << std::endl;
+
+	/* FIXME: Should this point to the cl_mem object, or should it just be the
+	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
+	 */
+	// device_mem
+	return {&buff, sizeof(cl_mem)};
+}
+
+void OpenCL::read(device_mem mem, size_t size, void* data_read) {
+	cl_mem buff = *((cl_mem*)&mem);
+	cl_int err;
+	err = clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL);
+	if (err != CL_SUCCESS) std::cout << "read error: " << err << std::endl;
+}
+
+void OpenCL::write(device_mem mem, size_t size, void* data_write) {
+	cl_mem buff = *((cl_mem*)&mem);
+	cl_int err;
+	err = clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL);
+	if (err != CL_SUCCESS) std::cout << "write error: " << err << std::endl;
+}
+
+int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
+				size_t* arg_sizes, uint8_t dim, size_t* work_size) {
+	if (id >= KERNEL_COUNT)	return CL_INVALID_KERNEL;
+	cl_kernel kernel = kernels[id];
+	cl_int err = 0;
+	for (uint8_t i = 0; i < num_args; i++) {
+		err |= clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]);
+		if (err != CL_SUCCESS) {
+			std::cout << "arg" << i << " error:" << err << std::endl;
+			return err;
+		}
+	}
+
+	// TODO: Figure out the optimal local work size
+	err = clEnqueueNDRangeKernel(	commands,	// command queue
+					kernel,		// kernel_id
+					dim,		// work dimension
+					NULL,		// global work offset
+					work_size,	// global work size(s)
+					NULL,		// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
+					0,		// number of events in wait list
+					NULL,		// wait list
+					NULL);		// return event
+
+	if (err != CL_SUCCESS) {
+		std::cout << "NDRange error:" << err << std::endl;
+		return err;
+	}
 
 	return CL_SUCCESS;
 }
