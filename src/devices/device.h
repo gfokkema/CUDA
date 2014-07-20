@@ -8,8 +8,8 @@
 #include "devices/device_mem.h"
 
 enum kernel_key : uint8_t {
-	KERNEL_TRACE_RAY,
 	KERNEL_PRODUCE_RAY,
+	KERNEL_TRACE_RAY,
 
 	/* Keep last */
 	KERNEL_COUNT
