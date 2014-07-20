@@ -28,7 +28,7 @@ int OpenCL::init() {
 		float ver = atof(version.substr(7,3).c_str());
 		if (ver > max_ver && devices.size() > 0) {
 			max_ver = ver;
-			device = devices[0];
+			device = devices[0]();
 		}
 	}
 
@@ -41,36 +41,53 @@ int OpenCL::init() {
 	std::cout << "Selected platform:\t" << platversion << std::endl;
 	std::cout << "Selected device:\t" << devicename << std::endl;
 
-	context = cl::Context(device, 0, 0, 0, &err);
+	context = (cl::Context(device, 0, 0, 0, &err))();
 	if (err != CL_SUCCESS) return err;
 
-	queue = cl::CommandQueue(context, device, 0, &err);
+	commands = (cl::CommandQueue(context, device, 0, &err))();
 	if (err != CL_SUCCESS) return err;
 
-	err = this->load("../src/kernel/kernel.cl");
+	err = this->load_kernels("../src/kernel/kernel.cl");
 	if (err != CL_SUCCESS) return err;
 
 	return CL_SUCCESS;
 }
 
-int OpenCL::load(std::string kernel_path) {
+int OpenCL::load_kernels(std::string kernel_path) {
 	std::ifstream file(kernel_path);
 	std::stringstream buffer;
 	std::string strbuffer;
 
 	buffer << file.rdbuf();
 	strbuffer = buffer.str();
-	const char* txt_source = strbuffer.c_str();
-
-	cl::Program::Sources source(1, std::make_pair(txt_source, strlen(txt_source)));
-	cl::Program program(context, source);
 
 	std::cout << "--------------------------" << std::endl;
 	std::cout << "--- source code loaded ---" << std::endl;
-	std::cout << source[0].first << std::endl;
+	std::cout << strbuffer << std::endl;
 	std::cout << "--------------------------" << std::endl;
 
+	const char* txt_source = strbuffer.c_str();
 	cl_int err;
+
+	// Create the program from source and build it.
+	cl_program program = clCreateProgramWithSource(context, 1, (const char **) &txt_source, NULL, &err);
+	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+	if (err != CL_SUCCESS) {
+		size_t len;
+		char buffer[2048];
+
+		std::cout << "Error: Failed to build program executable!" << std::endl;
+		clGetProgramBuildInfo(program, final_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+		std::cout << buffer << std::endl;
+	}
+	cl_kernel kernel_pr = clCreateKernel(program, "produceray", &err);
+	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	kernels.push_back(kernel_pr);
+	cl_kernel kernel_tr = clCreateKernel(program, "traceray", &err);
+	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	kernels.push_back(kernel_tr);
+
 	std::vector<cl::Device> devices(1, device);
 	err = program.build(devices, 0, 0, 0);
 	if (err != CL_SUCCESS) {

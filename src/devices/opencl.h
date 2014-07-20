@@ -15,7 +15,7 @@ public:
 	virtual ~OpenCL();
 
 	int init();
-	int load(std::string kernel_path);
+	int load_kernels(std::string kernel_path);
 
 	int produceray(Camera* cam, float4*& raydirs);
 	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
