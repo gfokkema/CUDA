@@ -8,6 +8,7 @@
 #include "devices/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
+#include "session.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -20,7 +21,7 @@ namespace {
 #else
 	Device* device = new OpenCL;
 #endif
-	Scene scene = new Scene(device);
+	Scene* scene = new Scene();
 	RenderSession session(device, scene);
 
 	/**
@@ -109,7 +110,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	scene.setCamera(&cam);
+	scene->setCamera(&cam);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -130,7 +131,11 @@ int main(int argc, char* argv[]) {
 	double prev = 0;
 	unsigned frames = 0;
 	do {
-		session->render();
+		session.render();
+		// Draw the buffer onto the off screen buffer
+		glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		// Swap buffers
+		glfwSwapBuffers(window);
 
 		glfwPollEvents();
 

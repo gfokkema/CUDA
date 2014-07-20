@@ -8,13 +8,12 @@
 
 struct cl_shape;
 class Camera;
-class Device;
 class Ray;
 
 class Scene {
 friend class RenderSession;
 public:
-	Scene(Device* device);
+	Scene();
 	virtual ~Scene();
 
 	void setCamera(Camera* cam);

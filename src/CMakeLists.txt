@@ -31,7 +31,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory (devices)
 add_subdirectory (util)
-add_executable (raytracer scene.cpp window.cpp)
+add_executable (raytracer scene.cpp window.cpp session.cpp)
 target_link_libraries (raytracer devices util ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY})
 
 IF (CUDA_FOUND)

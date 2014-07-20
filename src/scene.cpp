@@ -6,7 +6,7 @@
 #include "util/camera.h"
 #include "util/ray.h"
 
-Scene::Scene(Device* device) : _cam(nullptr), _device(device) {
+Scene::Scene() : _cam(nullptr) {
 	// Initialize shapes here.
 	_shapes.push_back(shape { { Vector(0,0,-3).gpu_type(), .2 }, SPHERE });
 }

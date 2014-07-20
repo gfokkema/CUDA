@@ -11,6 +11,9 @@ OpenCL::~OpenCL() {}
 int OpenCL::init() {
 	cl_int err;
 	std::vector<cl::Platform> platforms;
+	cl::Device device_cpp;
+	cl::CommandQueue commands_cpp;
+	cl::Context context_cpp;
 
 	err = cl::Platform::get(&platforms);
 	if (err != CL_SUCCESS) return err;
@@ -28,24 +31,28 @@ int OpenCL::init() {
 		float ver = atof(version.substr(7,3).c_str());
 		if (ver > max_ver && devices.size() > 0) {
 			max_ver = ver;
-			device = devices[0]();
+			device_cpp = devices[0];
 		}
 	}
 
 	std::string platversion, devicename;
-	err = device.getInfo(CL_DEVICE_VERSION, &platversion);
+	err = device_cpp.getInfo(CL_DEVICE_VERSION, &platversion);
 	if (err != CL_SUCCESS) return err;
-	err = device.getInfo(CL_DEVICE_NAME, &devicename);
+	err = device_cpp.getInfo(CL_DEVICE_NAME, &devicename);
 	if (err != CL_SUCCESS) return err;
 
 	std::cout << "Selected platform:\t" << platversion << std::endl;
 	std::cout << "Selected device:\t" << devicename << std::endl;
 
-	context = (cl::Context(device, 0, 0, 0, &err))();
+	context_cpp = cl::Context(device_cpp, 0, 0, 0, &err);
 	if (err != CL_SUCCESS) return err;
 
-	commands = (cl::CommandQueue(context, device, 0, &err))();
+	commands_cpp = cl::CommandQueue(context_cpp, device_cpp, 0, &err);
 	if (err != CL_SUCCESS) return err;
+
+	device = device_cpp();
+	commands = commands_cpp();
+	context = context_cpp();
 
 	err = this->load_kernels("../src/kernel/kernel.cl");
 	if (err != CL_SUCCESS) return err;
@@ -78,7 +85,7 @@ int OpenCL::load_kernels(std::string kernel_path) {
 		char buffer[2048];
 
 		std::cout << "Error: Failed to build program executable!" << std::endl;
-		clGetProgramBuildInfo(program, final_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
 		std::cout << buffer << std::endl;
 	}
 	cl_kernel kernel_pr = clCreateKernel(program, "produceray", &err);
@@ -88,6 +95,7 @@ int OpenCL::load_kernels(std::string kernel_path) {
 	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 	kernels.push_back(kernel_tr);
 
+	/*
 	std::vector<cl::Device> devices(1, device);
 	err = program.build(devices, 0, 0, 0);
 	if (err != CL_SUCCESS) {
@@ -95,11 +103,13 @@ int OpenCL::load_kernels(std::string kernel_path) {
 		std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
 		return err;
 	}
+	*/
 
 	std::cout << "--- BUILD SUCCESS ---" << std::endl;
 	return CL_SUCCESS;
 }
 
+/*
 int OpenCL::produceray(Camera* cam, float4*& raydirs) {
 	cl_int err;
 	unsigned size = cam->width() * cam->height();
@@ -169,6 +179,7 @@ int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, un
 
 	return CL_SUCCESS;
 }
+*/
 
 device_mem OpenCL::malloc(size_t size, permission perm) {
 	cl_mem_flags cl_perm;
@@ -191,7 +202,7 @@ device_mem OpenCL::malloc(size_t size, permission perm) {
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
 	 */
 	// device_mem
-	return {&buff, sizeof(cl_mem)};
+	return {(uintptr_t)&buff, sizeof(cl_mem)};
 }
 
 void OpenCL::read(device_mem mem, size_t size, void* data_read) {
