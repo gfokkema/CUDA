@@ -8,7 +8,7 @@ typedef struct gpu_float4 {
 	float v4[4];
 } gpu_float4 __attribute ((aligned(16)));
 #else
-typedef float4 gpu_float4;
+#define gpu_float4 float4
 #endif
 
 typedef struct camera {

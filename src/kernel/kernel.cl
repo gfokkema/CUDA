@@ -54,13 +54,13 @@ produceray(
 
 __kernel void
 traceray(
-		__const float4 origin,
+		__const camera cam,
 		__global float4* read_rays,
 		__global shape* read_shapes,
 		__global unsigned char* write_buffer)
 {
 	int idx = get_global_id(0);
-	write_buffer[idx * 3] = intersect(origin, read_rays[idx], read_shapes[0]);
+	write_buffer[idx * 3] = intersect(cam.pos, read_rays[idx], read_shapes[0]);
 	write_buffer[idx * 3 + 1] = 0;
 	write_buffer[idx * 3 + 2] = 0;
 }

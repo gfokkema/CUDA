@@ -1,5 +1,7 @@
 #include "kernel.cuh"
 
+#include <stdio.h>
+
 __device__
 unsigned char intersect(__const__ float4 origin, float4 dir, shape shape)
 {

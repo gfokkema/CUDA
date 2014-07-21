@@ -36,9 +36,9 @@ void RenderSession::render() {
 	// Blocking call!
 	_device->enqueue_kernel_range(KERNEL_PRODUCE_RAY, 2, pr_arg_values, pr_arg_sizes, 1, &pr_work_size);
 
-	// Arguments: float4 origin, float4* read_rays, shape* read_shapes, unsigned char* write_buffer
-	void* tr_arg_values[4] = { &cam.pos, &ray_dirs._mem_pointer, &shapes._mem_pointer, &buffer._mem_pointer };
-	size_t tr_arg_sizes[4] = { sizeof(gpu_float4), ray_dirs._mem_size, shapes._mem_size, buffer._mem_size };
+	// Arguments: cl_camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer
+	void* tr_arg_values[4] = { &cam, &ray_dirs._mem_pointer, &shapes._mem_pointer, &buffer._mem_pointer };
+	size_t tr_arg_sizes[4] = { sizeof(camera), ray_dirs._mem_size, shapes._mem_size, buffer._mem_size };
 
 	// Blocking call!
 	_device->enqueue_kernel_range(KERNEL_TRACE_RAY, 4, tr_arg_values, tr_arg_sizes, 1, &cam_size);
