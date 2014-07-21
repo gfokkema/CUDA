@@ -6,7 +6,6 @@
 RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _scene(scene)
 {
 	size_t cam_size = _scene->_cam->size();
-	std::cout<<cam_size<<std::endl;
 
 	// Allocate memory on the device
 	this->ray_dirs = _device->malloc(cam_size * sizeof(float4), PERM_READ_WRITE);
