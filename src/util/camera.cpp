@@ -15,6 +15,6 @@ void Camera::lookAt(float x, float y) {
 	y = (y + .5) * invheight - 0.5;
 	Vector up = this->up();
 	Vector newDir = (x * _right + y * up + _dir).normalize();
-	Vector newRight  = _right - (_right * newDir) * newDir;
+	Vector newRight  = (_right - (_right * newDir) * newDir).normalize() * _fovx;
 	_dir = newDir, _right = newRight;
 }
