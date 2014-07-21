@@ -3,7 +3,7 @@
 
 #define EPSILON 1e-4
 
-#ifndef __CUDACC__
+#if !defined(__CUDACC__) && !defined(__OPENCL_VERSION__)
 typedef struct gpu_float4 {
 	float v4[4];
 } gpu_float4 __attribute ((aligned(16)));
