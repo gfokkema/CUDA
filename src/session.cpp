@@ -1,6 +1,7 @@
 #include "session.h"
 #include <GL/glew.h>
 #include <cstdint>
+#include <ctime>
 
 RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _scene(scene)
 {

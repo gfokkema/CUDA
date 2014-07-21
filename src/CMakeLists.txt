@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake/modules" ${CMAKE_MODULE_PATH
 find_package (GLEW REQUIRED)
 find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
-find_package (CUDA)
+#find_package (CUDA)
 IF (CUDA_FOUND)
 	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
 	add_subdirectory (cuda)

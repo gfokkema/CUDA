@@ -69,6 +69,8 @@ traceray(
 {
 	int idx = get_global_id(0);
 	write_buffer[idx * 3] = intersect(origin, read_rays[idx], read_shapes[0]);
+	write_buffer[idx * 3 + 1] = 0;
+	write_buffer[idx * 3 + 2] = 0;
 }
 
 unsigned char
