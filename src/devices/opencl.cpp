@@ -57,7 +57,7 @@ int OpenCL::init() {
 }
 
 int OpenCL::load_kernels(std::vector<std::string> source_paths) {
-	std::string sources[source_paths.size()];
+	std::vector<std::string> sources(source_paths.size());
 	const char* source_ptr[source_paths.size()];
 	for (int i = 0; i < source_paths.size(); i++) {
 		std::ifstream file(source_paths[i]);
