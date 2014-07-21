@@ -65,15 +65,12 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 	for (int i = 0; i < source_paths.size(); i++) {
 		std::ifstream file(source_paths[i]);
 		std::stringstream buffer;
-		std::string strbuffer;
 
 		buffer << file.rdbuf();
-		strbuffer = buffer.str();
+		sources[i] = buffer.str();
+		source_ptr[i] = sources[i].c_str();
 
 		std::cout << "--- source code loaded for file " << source_paths[i] << " ---" << std::endl;
-
-		sources[i] = strbuffer;
-		source_ptr[i] = sources[i].c_str();
 	}
 
 	// Create the program from source and build it.

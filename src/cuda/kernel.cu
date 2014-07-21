@@ -1,28 +1,5 @@
 #include "kernel.cuh"
 
-#include <stdio.h>
-
-cudaEvent_t start, stop;
-float timer;
-
-__host__
-void starttimer() {
-	float time;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-	cudaEventRecord(start);
-}
-
-__host__
-void stoptimer(char* text) {
-	cudaEventRecord(stop);
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&timer, start, stop);
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);
-	printf(text, timer);
-}
-
 __device__
 unsigned char intersect(__const__ float4 origin, float4 dir, shape shape)
 {
@@ -62,22 +39,6 @@ void produceray(__const__ camera cam, float4* raydirs) {
 	raydirs[yi * cam.width + xi] = normalize(x * cam.right + y * cam.up + cam.dir);
 }
 
-__host__
-int cudaproduceray(camera cam, float4*& d_raydirs) {
-	unsigned size = cam.height * cam.width;
-
-	SAFE(cudaMalloc(&d_raydirs, size * sizeof(float4)));
-
-	// Perform computation on device
-	dim3 threadsperblock(8, 8);
-	dim3 numblocks(	cam.width / threadsperblock.x,
-					cam.height / threadsperblock.y);
-	produceray <<< numblocks,threadsperblock >>> (cam, d_raydirs);
-	CHECK_ERROR("Launching produce kernel");
-
-	return 0;
-}
-
 __global__
 void traceray(__const__ camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer)
 {
@@ -90,30 +51,10 @@ void traceray(__const__ camera cam, float4* read_rays, shape* read_shapes, unsig
 	write_buffer[3 * idx + 2] = 0;
 }
 
-__host__
-int cudatraceray(camera cam, float4* d_raydirs, shape* read_shapes, unsigned char*& buffer) {
-	unsigned size = cam.height * cam.width;
+int cudaproduceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* raydirs) {
+	produceray <<< blocks, threads >>> (cam, raydirs);
+}
 
-	shape* d_shapes;
-	SAFE(cudaMalloc(&d_shapes, sizeof(shape)));
-	SAFE(cudaMemcpy(d_shapes, read_shapes, sizeof(shape), cudaMemcpyHostToDevice));
-
-	unsigned char* d_buffer;
-	SAFE(cudaMalloc(&d_buffer, 3 * size * sizeof(unsigned char)));
-
-	// Perform computation on device
-	dim3 threadsperblock(8, 8);
-	dim3 numblocks(	cam.width / threadsperblock.x,
-					cam.height / threadsperblock.y);
-	traceray <<< numblocks,threadsperblock >>> (cam, d_raydirs, d_shapes, d_buffer);
-	CHECK_ERROR("Launching trace kernel");
-
-	// Read results
-	SAFE(cudaMemcpy(buffer, d_buffer, 3 * size * sizeof(unsigned char), cudaMemcpyDeviceToHost));
-
-	cudaFree(d_raydirs);
-	cudaFree(d_shapes);
-	cudaFree(d_buffer);
-
-	return 0;
+int cudatraceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer) {
+	traceray <<< blocks, threads >>> (cam, read_rays, read_shapes, write_buffer);
 }

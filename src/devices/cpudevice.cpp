@@ -8,13 +8,13 @@ int CPUDevice::init() {
 	return 0;
 }
 
-int CPUDevice::produceray(Camera* cam, float4*& raydirs) {
-	raydirs = new float4[cam->width() * cam->height()];
+int CPUDevice::produceray(Camera* cam, gpu_float4*& raydirs) {
+	raydirs = new gpu_float4[cam->width() * cam->height()];
 
 	float invwidth = 1.f / cam->width();
 	float invheight = 1.f / cam->height();
 
-	float4 *ray = raydirs;
+	gpu_float4 *ray = raydirs;
 	for (int yi = 0; yi < cam->height(); yi++) {
 		for (int xi = 0; xi < cam->width(); xi++) {
 			float x = (xi + .5) * invwidth - 0.5;
@@ -25,7 +25,7 @@ int CPUDevice::produceray(Camera* cam, float4*& raydirs) {
 	}
 }
 
-int CPUDevice::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
+int CPUDevice::traceray(Camera *cam, gpu_float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
 	for (int i = 0; i < cam->width() * cam->height(); i++) {
 		for (shape shape : shapes) {
 			buffer[i * 3] = intersect(cam->pos().gpu_type(), raydirs[i], shape);

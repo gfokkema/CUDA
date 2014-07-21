@@ -35,8 +35,8 @@ intersect(
 
 __kernel void
 produceray(
-		__global float4* output,
-		__const camera cam)
+		__const camera cam,
+		__global float4* output)
 {
 	int yi = get_global_id(0);
 	int offset = yi * cam.width;

@@ -12,8 +12,8 @@ public:
 
 	int init();
 
-	int produceray(Camera* cam, float4*& raydirs);
-	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
+	int produceray(Camera* cam, gpu_float4*& raydirs);
+	int traceray(Camera *cam, gpu_float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
 private:
 	unsigned char intersect(Vector origin, Vector dir, shape shape);
 };
