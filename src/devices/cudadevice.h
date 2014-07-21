@@ -5,6 +5,23 @@
 
 #include "devices/device.h"
 
+#define CU_SAFE( call) {                                                \
+	cudaError err = call;                                               \
+	if( cudaSuccess != err) {                                           \
+		fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",   \
+				__FILE__, __LINE__, cudaGetErrorString( err) );         \
+				exit(EXIT_FAILURE);                                     \
+	}                                                                   \
+}
+#define CU_CHECK_ERROR(errorMessage) {                                          \
+	cudaError_t err = cudaGetLastError();                                       \
+	if( cudaSuccess != err) {                                                   \
+		fprintf(stderr, "Cuda error: %s in file '%s' in line %i : %s.\n",       \
+				errorMessage, __FILE__, __LINE__, cudaGetErrorString( err) );   \
+				exit(EXIT_FAILURE);                                             \
+	}                                                                           \
+}
+
 extern int cudaproduceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* raydirs);
 extern int cudatraceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer);
 

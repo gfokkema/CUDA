@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
 	// FIXME:	glfwCreateWindow causes the race condition!
 	// 			Find a way to block until succesfull window creation...
-	usleep(10000);
+	usleep(50000);
 	if( window == NULL ){
 		std::cerr << "Failed to open GLFW window.\n" << std::endl;
 		glfwTerminate();
