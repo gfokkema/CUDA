@@ -79,7 +79,7 @@ float4 normalize(const float4& lhs) {
 	return lhs / length(lhs);
 }
 
-extern "C" int cudaproduceray(camera cam, float4*& raydirs);
-extern "C" int cudatraceray(camera cam, float4* raydirs, shape* read_shapes, unsigned char*& buffer);
+extern int cudaproduceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* raydirs);
+extern int cudatraceray(dim3 blocks, dim3 threads, __const__ camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer);
 
 #endif
