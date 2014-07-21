@@ -4,19 +4,20 @@
 
 #include "opencl.h"
 
-OpenCL::OpenCL() {}
+OpenCL::OpenCL() {
+	this->init();
+}
 
 OpenCL::~OpenCL() {}
 
 int OpenCL::init() {
 	cl_int err;
 	cl_uint num_plats;
-	cl_platform_id *plat;
 
 	err = clGetPlatformIDs(0, NULL, &num_plats);
 	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 
-	plat = (cl_platform_id*) ::malloc(sizeof(cl_platform_id) * num_plats);
+	cl_platform_id plat[num_plats];
 	err = clGetPlatformIDs(num_plats, plat, NULL);
 	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 
@@ -248,6 +249,8 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 		std::cout << "NDRange error:" << err << std::endl;
 		return err;
 	}
+
+	clFinish(commands);
 
 	return CL_SUCCESS;
 }

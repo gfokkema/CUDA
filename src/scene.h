@@ -13,12 +13,12 @@ class Ray;
 class Scene {
 friend class RenderSession;
 public:
-	Scene();
+	Scene(Camera* cam);
 	virtual ~Scene();
 
-	void setCamera(Camera* cam);
-	void render(unsigned char* buffer);
-	const Vector trace(const Ray& ray);
+	//void setCamera(Camera* cam);
+	//void render(unsigned char* buffer);
+	//const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
 	std::vector<shape> _shapes;

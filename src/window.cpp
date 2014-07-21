@@ -21,7 +21,7 @@ namespace {
 #else
 	Device* device = new OpenCL;
 #endif
-	Scene* scene = new Scene();
+	Scene* scene = new Scene(&cam);
 	RenderSession session(device, scene);
 
 	/**
@@ -105,12 +105,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Initialize OpenCL
-	if (device->init() != CL_SUCCESS) {
-		std::cerr << "Failed to initialize OpenCL" << std::endl;
-		return -1;
-	}
+	//if (device->init() != CL_SUCCESS) {
+	//	std::cerr << "Failed to initialize OpenCL" << std::endl;
+	//	return -1;
+	//}
 
-	scene->setCamera(&cam);
+	//scene->setCamera(&cam);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
