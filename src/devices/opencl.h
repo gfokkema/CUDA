@@ -7,6 +7,8 @@
   #include <CL/cl.hpp>
 #endif
 
+#include <vector>
+
 #include "devices/device.h"
 
 #define SAFE( call) {                                                     \
@@ -20,7 +22,7 @@
 #define SAFE_REF( call) {                                                 \
 	cl_int err; call;                                                     \
 	if( CL_SUCCESS != err) {                                              \
-		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n",    \
+		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n",   \
 				__FILE__, __LINE__, err);                                 \
 				exit(EXIT_FAILURE);                                       \
 	}                                                                     \

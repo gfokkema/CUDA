@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "shapes/shape.h"
 #include "util/camera.h"
 #include "devices/device_mem.h"
 

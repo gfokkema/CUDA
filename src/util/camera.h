@@ -1,20 +1,16 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include "vector.h"
+#include <cmath>
 
-typedef struct camera {
-	int width, height;
-	float4 pos;
-	float4 dir;
-	float4 up;
-	float4 right;
-} camera;
+#include "vector.h"
 
 class Camera {
 public:
-	Camera(int width, int height, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1), Vector up = Vector(0,1,0))
-		: _width(width), _height(height), _pos(pos), _dir(dir), _up(up) {};
+	Camera(int width, int height, float angle = 45, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
+		: _width(width), _height(height),
+		  _fovx(tanf(angle / 360 * 2 * M_PI)),
+		  _pos(pos), _dir(dir), _right{_fovx, 0, 0} {}
 	~Camera() {};
 
 	void strafe(float velocity, float dt);
@@ -23,8 +19,8 @@ public:
 
 	const Vector pos() const   { return _pos; };
 	const Vector dir() const   { return _dir; };
-	const Vector up() const    { return _up;  };
-	const Vector right() const { return _dir % _up * (float(_width) / float(_height)); };
+	const Vector up() const    { return _right % _dir * _height / float(_width);  };
+	const Vector right() const { return _right; };
 	const int width() const    { return _width; };
 	const int height() const   { return _height; };
 	const int size() const     { return _height * _width; };
@@ -35,9 +31,10 @@ public:
 												right().gpu_type() }; };
 private:
 	int _width, _height;
+	float _fovx;
 	Vector _pos;
 	Vector _dir;
-	Vector _up;
+	Vector _right;
 };
 
 #endif /* CAMERA_H_ */

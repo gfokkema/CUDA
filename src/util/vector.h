@@ -4,9 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-typedef struct float4 {
-	float v4[4];
-} float4 __attribute ((aligned(16)));
+#include "gpu_types.h"
 
 class Vector {
 public:
