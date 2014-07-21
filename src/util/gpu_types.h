@@ -12,11 +12,12 @@ typedef struct gpu_float4 {
 #endif
 
 typedef struct camera {
-	int width, height;
 	gpu_float4 pos;
 	gpu_float4 dir;
 	gpu_float4 up;
 	gpu_float4 right;
+	int width, height;
+	int _,__;
 } camera __attribute ((aligned(16)));
 
 enum type {
