@@ -50,14 +50,15 @@ int OpenCL::init() {
 	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
 	std::vector<std::string> source_paths;
-	source_paths.push_back("../src/kernel/kernel.cl");
 	source_paths.push_back("../src/util/gpu_types.h");
+	source_paths.push_back("../src/kernel/kernel.cl");
 	SAFE(this->load_kernels(source_paths));
 	return CL_SUCCESS;
 }
 
 int OpenCL::load_kernels(std::vector<std::string> source_paths) {
-	const char* sources[source_paths.size()];
+	std::string sources[source_paths.size()];
+	const char* source_ptr[source_paths.size()];
 	for (int i = 0; i < source_paths.size(); i++) {
 		std::ifstream file(source_paths[i]);
 		std::stringstream buffer;
@@ -71,13 +72,13 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 		std::cout << strbuffer << std::endl;
 		std::cout << "--------------------------" << std::endl;
 
-		const char* txt_source = strbuffer.c_str();
-		sources[i] = txt_source;
+		sources[i] = strbuffer;
+		source_ptr[i] = sources[i].c_str();
 	}
 
 	// Create the program from source and build it.
 	cl_program program;
-	SAFE_REF(program = clCreateProgramWithSource(context, source_paths.size(), sources, NULL, &err));
+	SAFE_REF(program = clCreateProgramWithSource(context, source_paths.size(), source_ptr, NULL, &err));
 	SAFE_BUILD(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
 
 	cl_kernel kernel_pr, kernel_tr;
