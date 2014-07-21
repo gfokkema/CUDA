@@ -49,28 +49,35 @@ int OpenCL::init() {
 	SAFE_REF(context = clCreateContext(0, 1, &device, NULL, NULL, &err));
 	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
-	this->load_kernels("../src/kernel/kernel.cl");
+	std::vector<std::string> source_paths;
+	source_paths.push_back("../src/kernel/kernel.cl");
+	source_paths.push_back("../src/util/gpu_types.h");
+	SAFE(this->load_kernels(source_paths));
 	return CL_SUCCESS;
 }
 
-int OpenCL::load_kernels(std::string kernel_path) {
-	std::ifstream file(kernel_path);
-	std::stringstream buffer;
-	std::string strbuffer;
+int OpenCL::load_kernels(std::vector<std::string> source_paths) {
+	const char* sources[source_paths.size()];
+	for (int i = 0; i < source_paths.size(); i++) {
+		std::ifstream file(source_paths[i]);
+		std::stringstream buffer;
+		std::string strbuffer;
 
-	buffer << file.rdbuf();
-	strbuffer = buffer.str();
+		buffer << file.rdbuf();
+		strbuffer = buffer.str();
 
-	std::cout << "--------------------------" << std::endl;
-	std::cout << "--- source code loaded ---" << std::endl;
-	std::cout << strbuffer << std::endl;
-	std::cout << "--------------------------" << std::endl;
+		std::cout << "--------------------------" << std::endl;
+		std::cout << "--- source code loaded ---" << std::endl;
+		std::cout << strbuffer << std::endl;
+		std::cout << "--------------------------" << std::endl;
 
-	const char* txt_source = strbuffer.c_str();
+		const char* txt_source = strbuffer.c_str();
+		sources[i] = txt_source;
+	}
 
 	// Create the program from source and build it.
 	cl_program program;
-	SAFE_REF(program = clCreateProgramWithSource(context, 1, (const char **) &txt_source, NULL, &err));
+	SAFE_REF(program = clCreateProgramWithSource(context, source_paths.size(), sources, NULL, &err));
 	SAFE_BUILD(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
 
 	cl_kernel kernel_pr, kernel_tr;
