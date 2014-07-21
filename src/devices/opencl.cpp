@@ -20,9 +20,9 @@ int OpenCL::init() {
 	float max_ver;
 	for (int i = 0; i < num_plats; i++) {
 		cl_uint num_devices;
-		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices));
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices));
 		cl_device_id devices[num_devices];
-		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL));
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, num_devices, devices, NULL));
 
 		size_t plat_info_length;
 		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length));
@@ -35,6 +35,9 @@ int OpenCL::init() {
 		if (ver > max_ver && num_devices > 0) {
 			max_ver = ver;
 			device = devices[0];
+		} else {
+			std::cout<<"No GPU found with OpenCL implementation."<<std::endl;
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -67,10 +70,7 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 		sources[i] = buffer.str();
 		source_ptr[i] = sources[i].c_str();
 
-		std::cout << "--------------------------" << std::endl;
-		std::cout << "--- source code loaded ---" << std::endl;
-		std::cout << sources[i] << std::endl;
-		std::cout << "--------------------------" << std::endl;
+		std::cout << "--- source code loaded for file " << source_paths[i] << " ---" << std::endl;
 	}
 
 	// Create the program from source and build it.
