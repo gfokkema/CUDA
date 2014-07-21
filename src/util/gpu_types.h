@@ -17,7 +17,7 @@ typedef struct camera {
 	gpu_float4 dir;
 	gpu_float4 up;
 	gpu_float4 right;
-} camera;
+} camera __attribute ((aligned(16)));
 
 enum type {
 	SPHERE,
