@@ -11,34 +11,23 @@ OpenCL::OpenCL() {
 OpenCL::~OpenCL() {}
 
 int OpenCL::init() {
-	cl_int err;
 	cl_uint num_plats;
-
-	err = clGetPlatformIDs(0, NULL, &num_plats);
-	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	SAFE(clGetPlatformIDs(0, NULL, &num_plats));
 
 	cl_platform_id plat[num_plats];
-	err = clGetPlatformIDs(num_plats, plat, NULL);
-	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	SAFE(clGetPlatformIDs(num_plats, plat, NULL));
 
 	float max_ver;
 	for (int i = 0; i < num_plats; i++) {
 		cl_uint num_devices;
-		size_t plat_info_length;
-
-		err = clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
-		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
-
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices));
 		cl_device_id devices[num_devices];
-		err = clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
-		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL));
 
-		err = clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length);
-		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
-
+		size_t plat_info_length;
+		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length));
 		char plat_version[plat_info_length];
-		err = clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, plat_info_length, plat_version, NULL);
-		if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, plat_info_length, plat_version, NULL));
 
 		std::string version(plat_version);
 		std::cout << version << std::endl;
@@ -50,24 +39,17 @@ int OpenCL::init() {
 	}
 
 	char device_name[256];
-	clGetDeviceInfo(device, CL_DEVICE_NAME, 256, device_name, NULL);
 	char device_version[256];
-	clGetDeviceInfo(device, CL_DEVICE_VERSION, 256, device_version, NULL);
+	SAFE(clGetDeviceInfo(device, CL_DEVICE_NAME, 256, device_name, NULL));
+	SAFE(clGetDeviceInfo(device, CL_DEVICE_VERSION, 256, device_version, NULL));
 
 	std::cout << "Selected platform:\t" << device_version << std::endl;
 	std::cout << "Selected device:\t" << device_name << std::endl;
 
-	// Set OpenCL context
-	context = clCreateContext(0, 1, &device, NULL, NULL, &err);
-	if (err != CL_SUCCESS) return err;
+	SAFE_REF(context = clCreateContext(0, 1, &device, NULL, NULL, &err));
+	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
-	// Create command queue
-	commands = clCreateCommandQueue(context, device, 0, &err);
-	if (err != CL_SUCCESS) return err;
-
-	err = this->load_kernels("../src/kernel/kernel.cl");
-	if (err != CL_SUCCESS) return err;
-
+	this->load_kernels("../src/kernel/kernel.cl");
 	return CL_SUCCESS;
 }
 
@@ -85,34 +67,24 @@ int OpenCL::load_kernels(std::string kernel_path) {
 	std::cout << "--------------------------" << std::endl;
 
 	const char* txt_source = strbuffer.c_str();
-	cl_int err;
 
 	// Create the program from source and build it.
-	cl_program program = clCreateProgramWithSource(context, 1, (const char **) &txt_source, NULL, &err);
-	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
-	err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-	if (err != CL_SUCCESS) {
-		size_t len;
-		char buffer[2048];
+	cl_program program;
+	SAFE_REF(program = clCreateProgramWithSource(context, 1, (const char **) &txt_source, NULL, &err));
+	SAFE_BUILD(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
 
-		std::cout << "Error: Failed to build program executable!" << std::endl;
-		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
-		std::cout << buffer << std::endl;
-	}
-	cl_kernel kernel_pr = clCreateKernel(program, "produceray", &err);
-	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
+	cl_kernel kernel_pr, kernel_tr;
+	SAFE_REF(kernel_pr = clCreateKernel(program, "produceray", &err));
+	SAFE_REF(kernel_tr = clCreateKernel(program, "traceray", &err));
 	kernels.push_back(kernel_pr);
-	cl_kernel kernel_tr = clCreateKernel(program, "traceray", &err);
-	if (err != CL_SUCCESS)		printf("ERROR at line %u\n", __LINE__);
 	kernels.push_back(kernel_tr);
 
-	std::cout << "--- BUILD SUCCESS ---" << std::endl;
 	return CL_SUCCESS;
 }
 
 device_mem OpenCL::malloc(size_t size, permission perm) {
 	cl_mem_flags cl_perm;
-	cl_int err;
+
 	switch (perm) {
 		case PERM_WRITE_ONLY:
 			cl_perm = CL_MEM_WRITE_ONLY;
@@ -124,8 +96,9 @@ device_mem OpenCL::malloc(size_t size, permission perm) {
 			cl_perm = CL_MEM_READ_WRITE;
 			break;
 	}
-	cl_mem buff = clCreateBuffer(context, cl_perm, size, NULL, &err);
-	if (err != CL_SUCCESS) std::cout << "malloc error: " << err << std::endl;
+
+	cl_mem buff;
+	SAFE_REF(buff = clCreateBuffer(context, cl_perm, size, NULL, &err));
 
 	/* FIXME: Should this point to the cl_mem object, or should it just be the
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
@@ -136,34 +109,25 @@ device_mem OpenCL::malloc(size_t size, permission perm) {
 
 void OpenCL::read(device_mem mem, size_t size, void* data_read) {
 	cl_mem buff = (cl_mem) mem._mem_pointer;
-	cl_int err;
-	err = clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL);
-	if (err != CL_SUCCESS) std::cout << "read error: " << err << std::endl;
+	SAFE(clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL));
 }
 
 void OpenCL::write(device_mem mem, size_t size, void* data_write) {
 	cl_mem buff = (cl_mem) mem._mem_pointer;
-	cl_int err;
-	//std::cout << data_write << std::endl;
-	err = clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL);
-	if (err != CL_SUCCESS) std::cout << "write error: " << err << std::endl;
+	SAFE(clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL));
 }
 
 int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
 				size_t* arg_sizes, uint8_t dim, size_t* work_size) {
 	if (id >= KERNEL_COUNT)	return CL_INVALID_KERNEL;
+
 	cl_kernel kernel = kernels[id];
-	cl_int err = 0;
 	for (unsigned int i = 0; i < num_args; i++) {
-		err |= clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]);
-		if (err != CL_SUCCESS) {
-			std::cout << "arg" << i << " error:" << err << std::endl;
-			return err;
-		}
+		SAFE(clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]));
 	}
 
 	// TODO: Figure out the optimal local work size
-	err = clEnqueueNDRangeKernel(	commands,	// command queue
+	SAFE(clEnqueueNDRangeKernel(	commands,	// command queue
 					kernel,		// kernel_id
 					dim,		// work dimension
 					NULL,		// global work offset
@@ -171,14 +135,8 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 					NULL,		// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
 					0,		// number of events in wait list
 					NULL,		// wait list
-					NULL);		// return event
-
-	if (err != CL_SUCCESS) {
-		std::cout << "NDRange error:" << err << std::endl;
-		return err;
-	}
-
-	clFinish(commands);
+					NULL));		// return event
+	SAFE(clFinish(commands));
 
 	return CL_SUCCESS;
 }

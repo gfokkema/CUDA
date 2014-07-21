@@ -9,6 +9,34 @@
 
 #include "devices/device.h"
 
+#define SAFE( call) {                                                     \
+	cl_int err = call;                                                    \
+	if( CL_SUCCESS != err) {                                              \
+		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n",   \
+				__FILE__, __LINE__, err);                                 \
+				exit(EXIT_FAILURE);                                       \
+	}                                                                     \
+}
+#define SAFE_REF( call) {                                                 \
+	cl_int err; call;                                                     \
+	if( CL_SUCCESS != err) {                                              \
+		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n",    \
+				__FILE__, __LINE__, err);                                 \
+				exit(EXIT_FAILURE);                                       \
+	}                                                                     \
+}
+#define SAFE_BUILD( call) {                                                   \
+	cl_int err = call;                                                        \
+	if( CL_SUCCESS != err) {                                                  \
+		char buffer[2048];                                                    \
+		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, 0); \
+		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n"         \
+				"Build log:\n%s\n",                                           \
+				__FILE__, __LINE__, err, buffer);                             \
+				exit(EXIT_FAILURE);                                           \
+	}                                                                         \
+}
+
 class OpenCL : public Device {
 public:
 	OpenCL();
