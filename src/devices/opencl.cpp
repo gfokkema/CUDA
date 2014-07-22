@@ -88,8 +88,13 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 }
 
 device_mem OpenCL::malloc(size_t size, void* host_ptr, mem_flags perm) {
+#ifdef __APPLE__
+	void* buff;
+	buff = gcl_malloc(size, host_ptr, perm);
+#else
 	cl_mem buff;
 	SAFE_REF(buff = clCreateBuffer(context, perm, size, host_ptr, &err));
+#endif
 
 	/* FIXME: Should this point to the cl_mem object, or should it just be the
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
