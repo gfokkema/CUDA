@@ -3,11 +3,14 @@
 
 #include <unistd.h>
 
+#ifdef CUDA_FOUND
 #include "devices/cudadevice.h"
+#endif /* CUDA_FOUND */
 #include "devices/cpudevice.h"
 #include "devices/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
+#include "session.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -15,12 +18,13 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-#ifdef CUDA_FOUND
+#ifdef CUDA_FOUND2
 	Device* device = new CUDADevice;
 #else
 	Device* device = new OpenCL;
 #endif
-	Scene scene(device);
+	Scene* scene = new Scene(&cam);
+	RenderSession session(device, scene);
 
 	/**
 	* Time independent keyboard function
@@ -88,7 +92,7 @@ int main(int argc, char* argv[]) {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
 	// FIXME:	glfwCreateWindow causes the race condition!
 	// 			Find a way to block until succesfull window creation...
-	usleep(10000);
+	usleep(50000);
 	if( window == NULL ){
 		std::cerr << "Failed to open GLFW window.\n" << std::endl;
 		glfwTerminate();
@@ -103,12 +107,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Initialize OpenCL
-	if (device->init() != CL_SUCCESS) {
-		std::cerr << "Failed to initialize OpenCL" << std::endl;
-		return -1;
-	}
+	//if (device->init() != CL_SUCCESS) {
+	//	std::cerr << "Failed to initialize OpenCL" << std::endl;
+	//	return -1;
+	//}
 
-	scene.setCamera(&cam);
+	//scene->setCamera(&cam);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -129,18 +133,12 @@ int main(int argc, char* argv[]) {
 	double prev = 0;
 	unsigned frames = 0;
 	do {
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		// Map the buffer and render the scene
-		unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-		scene.render(buffer);
-		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
+		session.render();
 		// Draw the buffer onto the off screen buffer
 		glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
 		// Swap buffers
 		glfwSwapBuffers(window);
+
 		glfwPollEvents();
 
 		double cur = glfwGetTime();

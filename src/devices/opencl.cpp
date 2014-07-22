@@ -4,128 +4,144 @@
 
 #include "opencl.h"
 
-OpenCL::OpenCL() {}
+OpenCL::OpenCL() {
+	this->init();
+}
 
 OpenCL::~OpenCL() {}
 
 int OpenCL::init() {
-	std::vector<cl::Platform> platforms;
-	SAFE(cl::Platform::get(&platforms));
+	cl_uint num_plats;
+	SAFE(clGetPlatformIDs(0, NULL, &num_plats));
+
+	cl_platform_id plat[num_plats];
+	SAFE(clGetPlatformIDs(num_plats, plat, NULL));
 
 	float max_ver;
-	for (int i = 0; i < platforms.size(); i++) {
-		std::vector<cl::Device> devices;
-		SAFE(platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices));
+	for (int i = 0; i < num_plats; i++) {
+		cl_uint num_devices;
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices));
+		cl_device_id devices[num_devices];
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, num_devices, devices, NULL));
 
-		std::string version;
-		SAFE(platforms[i].getInfo(CL_PLATFORM_VERSION, &version));
+		size_t plat_info_length;
+		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length));
+		char plat_version[plat_info_length];
+		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, plat_info_length, plat_version, NULL));
 
+		std::string version(plat_version);
+		std::cout << version << std::endl;
 		float ver = atof(version.substr(7,3).c_str());
-		if (ver > max_ver && devices.size() > 0) {
+		if (ver > max_ver && num_devices > 0) {
 			max_ver = ver;
 			device = devices[0];
+		} else {
+			std::cout<<"No GPU found with OpenCL implementation."<<std::endl;
+			exit(EXIT_FAILURE);
 		}
 	}
 
-	std::string platversion, devicename;
-	SAFE(device.getInfo(CL_DEVICE_VERSION, &platversion));
-	SAFE(device.getInfo(CL_DEVICE_NAME, &devicename));
+	char device_name[256];
+	char device_version[256];
+	SAFE(clGetDeviceInfo(device, CL_DEVICE_NAME, 256, device_name, NULL));
+	SAFE(clGetDeviceInfo(device, CL_DEVICE_VERSION, 256, device_version, NULL));
 
-	std::cout << "Selected platform:\t" << platversion << std::endl;
-	std::cout << "Selected device:\t" << devicename << std::endl;
+	std::cout << "Selected platform:\t" << device_version << std::endl;
+	std::cout << "Selected device:\t" << device_name << std::endl;
 
-	SAFE_REF(context = cl::Context(device, 0, 0, 0, &err));
-	SAFE_REF(queue = cl::CommandQueue(context, device, 0, &err));
+	SAFE_REF(context = clCreateContext(0, 1, &device, NULL, NULL, &err));
+	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
 	std::vector<std::string> source_paths;
 	source_paths.push_back("../src/util/gpu_types.h");
 	source_paths.push_back("../src/kernel/kernel.cl");
-
-	SAFE(this->load(source_paths));
-
+	SAFE(this->load_kernels(source_paths));
 	return CL_SUCCESS;
 }
 
-int OpenCL::load(std::vector<std::string> source_paths) {
-	cl::Program::Sources source;
-
-	std::vector<std::string> txt_sources;
-	for (std::string source_path : source_paths) {
-		std::ifstream file(source_path);
+int OpenCL::load_kernels(std::vector<std::string> source_paths) {
+	std::vector<std::string> sources(source_paths.size());
+	const char* source_ptr[source_paths.size()];
+	for (int i = 0; i < source_paths.size(); i++) {
+		std::ifstream file(source_paths[i]);
 		std::stringstream buffer;
-		std::string strbuffer;
 
 		buffer << file.rdbuf();
-		strbuffer = buffer.str();
-		const char* txt_source = strbuffer.c_str();
+		sources[i] = buffer.str();
+		source_ptr[i] = sources[i].c_str();
 
-		source.push_back(std::make_pair(txt_source, strlen(txt_source)));
-		txt_sources.push_back(strbuffer);
+		std::cout << "--- source code loaded for file " << source_paths[i] << " ---" << std::endl;
 	}
 
-	SAFE_REF(program = cl::Program(context, source, &err));
+	// Create the program from source and build it.
+	cl_program program;
+	SAFE_REF(program = clCreateProgramWithSource(context, source_paths.size(), source_ptr, NULL, &err));
+	SAFE_BUILD(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
 
-	std::vector<cl::Device> devices(1, device);
-	SAFE_BUILD(program.build(devices, 0, 0, 0));
-
-	return CL_SUCCESS;
-}
-
-int OpenCL::produceray(Camera* cam, float4*& raydirs) {
-	unsigned size = cam->width() * cam->height();
-	cl::Buffer cl_write;
-	cl::Kernel kernel;
-
-	// Initialize write buffer
-	SAFE_REF(cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, size * sizeof(cl_float4), 0, &err));
-
-	// Initialize kernel
-	SAFE_REF(kernel = cl::Kernel(program, "produceray", &err));
-	SAFE(kernel.setArg(0, cl_write));
-	SAFE(kernel.setArg(1, cam->gpu_type()));
-
-	// Enqueue kernel
-	cl::NDRange global(cam->height());
-	SAFE(this->queue.enqueueNDRangeKernel(kernel, 0, global));
-	SAFE(this->queue.finish());
-
-	// Read results
-	raydirs = new float4[size];
-	SAFE(this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, size * sizeof(float4), raydirs));
+	cl_kernel kernel_pr, kernel_tr;
+	SAFE_REF(kernel_pr = clCreateKernel(program, "produceray", &err));
+	SAFE_REF(kernel_tr = clCreateKernel(program, "traceray", &err));
+	kernels.push_back(kernel_pr);
+	kernels.push_back(kernel_tr);
 
 	return CL_SUCCESS;
 }
 
-int OpenCL::traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer) {
-	unsigned size = cam->width() * cam->height();
-	cl::Buffer cl_read_rays;
-	cl::Buffer cl_read_shapes;
-	cl::Buffer cl_write;
-	cl::Kernel kernel;
+device_mem OpenCL::malloc(size_t size, permission perm) {
+	cl_mem_flags cl_perm;
 
-	SAFE_REF(cl_read_rays = cl::Buffer(this->context, CL_MEM_READ_ONLY, size * sizeof(float4), 0, &err));
-	SAFE_REF(cl_read_shapes = cl::Buffer(this->context, CL_MEM_READ_ONLY, shapes.size() * sizeof(shape), 0, &err));
-	SAFE_REF(cl_write = cl::Buffer(this->context, CL_MEM_WRITE_ONLY, 3 * size * sizeof(unsigned char), 0, &err));
+	switch (perm) {
+		case PERM_WRITE_ONLY:
+			cl_perm = CL_MEM_WRITE_ONLY;
+			break;
+		case PERM_READ_ONLY:
+			cl_perm = CL_MEM_READ_ONLY;
+			break;
+		case PERM_READ_WRITE:
+			cl_perm = CL_MEM_READ_WRITE;
+			break;
+	}
 
-	SAFE(this->queue.enqueueWriteBuffer(cl_read_rays, CL_TRUE, 0, size * sizeof(float4), raydirs));
-	SAFE(this->queue.enqueueWriteBuffer(cl_read_shapes, CL_TRUE, 0, shapes.size() * sizeof(shape), shapes.data()));
+	cl_mem buff;
+	SAFE_REF(buff = clCreateBuffer(context, cl_perm, size, NULL, &err));
 
-	// Initialize kernel
-	SAFE_REF(kernel = cl::Kernel(program, "traceray", &err));
-	SAFE(kernel.setArg(0, cam->pos().gpu_type()));
-	SAFE(kernel.setArg(1, cl_read_rays));
-	SAFE(kernel.setArg(2, cl_read_shapes));
-	SAFE(kernel.setArg(3, cl_write));
+	/* FIXME: Should this point to the cl_mem object, or should it just be the
+	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
+	 */
+	// device_mem
+	return {(uintptr_t)buff, sizeof(cl_mem)};
+}
 
-	// Enqueue kernel
-	cl::NDRange global(size);
-	SAFE(this->queue.enqueueNDRangeKernel(kernel, 0, global));
-	SAFE(this->queue.finish());
+void OpenCL::read(device_mem mem, size_t size, void* data_read) {
+	cl_mem buff = (cl_mem) mem._mem_pointer;
+	SAFE(clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL));
+}
 
-	// Read results
-	SAFE(this->queue.enqueueReadBuffer(cl_write, CL_TRUE, 0, 3 * size * sizeof(unsigned char), buffer));
+void OpenCL::write(device_mem mem, size_t size, void* data_write) {
+	cl_mem buff = (cl_mem) mem._mem_pointer;
+	SAFE(clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL));
+}
 
-	delete raydirs;
+int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
+				size_t* arg_sizes, uint8_t dim, size_t* work_size) {
+	if (id >= KERNEL_COUNT)	return CL_INVALID_KERNEL;
+
+	cl_kernel kernel = kernels[id];
+	for (unsigned int i = 0; i < num_args; i++) {
+		SAFE(clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]));
+	}
+
+	// TODO: Figure out the optimal local work size
+	SAFE(clEnqueueNDRangeKernel(	commands,	// command queue
+					kernel,		// kernel_id
+					dim,		// work dimension
+					NULL,		// global work offset
+					work_size,	// global work size(s)
+					NULL,		// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
+					0,		// number of events in wait list
+					NULL,		// wait list
+					NULL));		// return event
+	SAFE(clFinish(commands));
 
 	return CL_SUCCESS;
 }

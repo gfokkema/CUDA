@@ -30,11 +30,11 @@
 #define SAFE_BUILD( call) {                                                   \
 	cl_int err = call;                                                        \
 	if( CL_SUCCESS != err) {                                                  \
-		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n"        \
-				"Error code: %d. Build log:\n%s\n",                     \
-				__FILE__, __LINE__, err,                                      \
-				program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device),        \
-				program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device).c_str());  \
+		char buffer[2048];                                                    \
+		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, 0); \
+		fprintf(stderr, "OpenCL error in file '%s' in line %i: %d.\n"         \
+				"Build log:\n%s\n",                                           \
+				__FILE__, __LINE__, err, buffer);                             \
 				exit(EXIT_FAILURE);                                           \
 	}                                                                         \
 }
@@ -45,16 +45,19 @@ public:
 	virtual ~OpenCL();
 
 	int init();
-	int load(std::vector<std::string> source_paths);
+	int load_kernels(std::vector<std::string> kernel_path);
 
-	int produceray(Camera* cam, float4*& raydirs);
-	int traceray(Camera *cam, float4* raydirs, std::vector<shape> shapes, unsigned char*& buffer);
+	virtual device_mem malloc(size_t size, permission perm);
+	virtual void read(device_mem mem, size_t size, void* data_read);
+	virtual void write(device_mem mem, size_t size, void* data_write);
+	virtual int enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
+					size_t* arg_sizes, uint8_t dim, size_t* work_size);
 
-	cl::CommandQueue queue;
-	cl::Context context;
+	cl_command_queue 	commands;
+	cl_context		context;
 protected:
-	cl::Device device;
-	cl::Program program;
+	cl_device_id		device;
+	std::vector<cl_kernel>	kernels;
 };
 
 #endif /* OPENCL_H_ */

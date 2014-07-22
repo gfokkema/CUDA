@@ -23,11 +23,12 @@ public:
 	const Vector right() const { return _right; };
 	const int width() const    { return _width; };
 	const int height() const   { return _height; };
-	const camera gpu_type() const { return {	_width, _height,
-												pos().gpu_type(),
+	const int size() const     { return _height * _width; };
+	const camera gpu_type() const { return {	pos().gpu_type(),
 												dir().gpu_type(),
 												up().gpu_type(),
-												right().gpu_type() }; };
+												right().gpu_type(),
+												_width, _height }; };
 private:
 	int _width, _height;
 	float _fovx;

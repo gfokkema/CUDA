@@ -7,20 +7,19 @@
 
 struct cl_shape;
 class Camera;
-class Device;
 class Ray;
 
 class Scene {
+friend class RenderSession;
 public:
-	Scene(Device* device);
+	Scene(Camera* cam);
 	virtual ~Scene();
 
-	void setCamera(Camera* cam);
-	void render(unsigned char* buffer);
-	const Vector trace(const Ray& ray);
+	//void setCamera(Camera* cam);
+	//void render(unsigned char* buffer);
+	//const Vector trace(const Ray& ray);
 private:
 	Camera* _cam;
-	Device* _device;
 	std::vector<shape> _shapes;
 };
 

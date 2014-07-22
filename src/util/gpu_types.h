@@ -4,18 +4,21 @@
 #define EPSILON 1e-4
 
 #if !defined(__CUDACC__) && !defined(__OPENCL_VERSION__)
-typedef struct float4 {
+typedef struct gpu_float4 {
 	float v4[4];
-} float4 __attribute ((aligned(16)));
-#endif /* __CUDACC__ */
+} gpu_float4 __attribute ((aligned(16)));
+#else
+#define gpu_float4 float4
+#endif
 
 typedef struct camera {
+	gpu_float4 pos;
+	gpu_float4 dir;
+	gpu_float4 up;
+	gpu_float4 right;
 	int width, height;
-	float4 pos;
-	float4 dir;
-	float4 up;
-	float4 right;
-} camera;
+	int _,__;
+} camera __attribute ((aligned(16)));
 
 enum type {
 	SPHERE,
@@ -27,19 +30,19 @@ typedef struct shape {
 	union {
 		// SPHERE
 		struct {
-			float4 origin;	// offset 0
+			gpu_float4 origin;	// offset 0
 			float radius;	// offset 16
 		} sphere;
 		// PLANE
 		struct {
-			float4 origin;	// offset 0
-			float4 normal;	// offset 16
+			gpu_float4 origin;	// offset 0
+			gpu_float4 normal;	// offset 16
 		} plane;
 		// TRIANGLE
 		struct {
-			float4 v1;		// offset 0
-			float4 v2;		// offset 16
-			float4 v3;		// offset 32
+			gpu_float4 v1;		// offset 0
+			gpu_float4 v2;		// offset 16
+			gpu_float4 v3;		// offset 32
 		} triangle;
 	};
 
