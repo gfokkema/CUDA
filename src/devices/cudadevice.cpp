@@ -8,9 +8,10 @@ int CUDADevice::init() {
 	return 0;
 }
 
-device_mem CUDADevice::malloc(size_t size, permission perm) {
+device_mem CUDADevice::malloc(size_t size, void* host_ptr, mem_flags perm) {
 	void* buff;
 	CU_SAFE(cudaMalloc(&buff, size));
+	if (host_ptr != NULL) CU_SAFE(cudaMemcpy(host_ptr, buff, size, cudaMemcpyHostToDevice));
 	return {(uintptr_t)buff, size};
 }
 
