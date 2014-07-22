@@ -8,7 +8,7 @@ int CUDADevice::init() {
 	return 0;
 }
 
-device_mem CUDADevice::malloc(size_t size, permission perm) {
+device_mem CUDADevice::malloc(size_t size, mem_flags perm) {
 	void* buff;
 	CU_SAFE(cudaMalloc(&buff, size));
 	return {(uintptr_t)buff, size};
