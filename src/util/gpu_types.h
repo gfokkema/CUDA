@@ -27,29 +27,25 @@ typedef struct shape {
 	union {
 		// SPHERE
 		struct {
-			float4 origin;	// offset 0
-			float radius;	// offset 16
-			int pad_sphere11, pad_sphere12, pad_sphere13;
-			float4 pad_sphere2;
-			float4 pad_sphere3;
-		} sphere;
+			float4 origin;		// offset 0
+			float radius;		// offset 16
+			int pad_sphere11, pad_sphere12, pad_sphere13;	// offset 32
+		} sphere; 
 		// PLANE
 		struct {
-			float4 origin;	// offset 0
-			float4 normal;	// offset 16
-			float4 pad_plane1;
-			float4 pad_plane2;
+			float4 origin;		// offset 0
+			float4 normal;		// offset 16
+			float4 pad_plane1;	// offset 32
 		} plane;
 		// TRIANGLE
 		struct {
 			float4 v1;		// offset 0
 			float4 v2;		// offset 16
 			float4 v3;		// offset 32
-			float4 pad_triangle;
 		} triangle;
 	};
 
-	int type;					// offset 48
+	int type;				// offset 48
 	int pad1, pad2, pad3;
 } shape;
 

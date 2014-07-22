@@ -1,7 +1,9 @@
 #include <gpu_types.h>
 
-unsigned char
-intersect(
+unsigned char intersect(__const float4, float4, shape);
+//void print_camera_info(camera *cam);
+
+unsigned char intersect(
 		__const float4 origin,
 		float4 dir,
 		shape shape)
@@ -31,9 +33,8 @@ intersect(
 	return 255;
 }
 
-__kernel void
-produceray(
-		__constant struct camera* cam,
+__kernel void produceray(
+		__constant camera *cam,
 		__global float4* output)
 {
 	int yi = get_global_id(0);
@@ -51,15 +52,15 @@ produceray(
 	}
 }
 
-void
-print_camera_info(__constant struct camera *cam)
+/*
+void print_camera_info(camera *cam)
 {
 	printf("Cam attributes (kernel):\n  pos:   %f,%f,%f,%f\n  dir:   %f,%f,%f,%f\n  right: %f,%f,%f,%f\n  width, height: %d,%d\n  size: %d\n", cam->pos.x,cam->pos.y,cam->pos.z,cam->pos.w, cam->dir.x,cam->dir.y,cam->dir.z,cam->dir.w,cam->right.x,cam->right.y,cam->right.z,cam->right.w,cam->width, cam->height, sizeof(camera));
 }
+*/
 
-__kernel void
-traceray(
-		__constant struct camera* cam,
+__kernel void traceray(
+		__constant camera *cam,
 		__global float4* read_rays,
 		__global shape* read_shapes,
 		__global unsigned char* write_buffer)
