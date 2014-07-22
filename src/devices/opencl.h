@@ -5,7 +5,7 @@
   #include <OpenCL/opencl.h>
 #else
   #include <CL/cl.h>
-#endif
+#endif /* __APPLE__ */
 
 #include <vector>
 
@@ -58,7 +58,7 @@ public:
 	dispatch_queue_t	dp_queue;
 #else
 	cl_command_queue 	commands;
-#endif
+#endif /* __APPLE__ */
 	cl_context		context;
 protected:
 	cl_device_id		device;

@@ -122,7 +122,7 @@ void OpenCL::read(device_mem mem, size_t size, void* data_read) {
 #else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL));
-#endif
+#endif /* __APPLE__ */
 }
 
 void OpenCL::write(device_mem mem, size_t size, void* data_write) {
@@ -131,7 +131,7 @@ void OpenCL::write(device_mem mem, size_t size, void* data_write) {
 #else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL));
-#endif
+#endif /* __APPLE__ */
 }
 
 int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
@@ -184,6 +184,6 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 					NULL,		// wait list
 					NULL));		// return event
 	SAFE(clFinish(commands));
-#endif
+#endif /* __APPLE__ */
 	return CL_SUCCESS;
 }
