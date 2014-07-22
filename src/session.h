@@ -11,6 +11,7 @@ private:
 	Device* _device;
 	Scene* _scene;
 
+	device_mem cam_buff;
 	device_mem ray_dirs;
 	device_mem shapes;
 	device_mem buffer;

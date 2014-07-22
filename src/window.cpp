@@ -77,7 +77,7 @@ namespace {
 
 	void handle_input(float dt) {
 		handle_keyboard(dt);
-		handle_mouse();
+		//handle_mouse();
 	}
 }
 

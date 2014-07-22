@@ -53,7 +53,7 @@ int OpenCL::init() {
 	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
 	std::vector<std::string> source_paths;
-	source_paths.push_back("../src/util/gpu_types.h");
+	//source_paths.push_back("../src/util/gpu_types.h");
 	source_paths.push_back("../src/kernel/kernel.cl");
 	SAFE(this->load_kernels(source_paths));
 	return CL_SUCCESS;
@@ -76,7 +76,7 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 	// Create the program from source and build it.
 	cl_program program;
 	SAFE_REF(program = clCreateProgramWithSource(context, source_paths.size(), source_ptr, NULL, &err));
-	SAFE_BUILD(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
+	SAFE_BUILD(clBuildProgram(program, 0, NULL, "-I ../src/util/", NULL, NULL));
 
 	cl_kernel kernel_pr, kernel_tr;
 	SAFE_REF(kernel_pr = clCreateKernel(program, "produceray", &err));

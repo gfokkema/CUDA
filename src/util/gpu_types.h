@@ -4,20 +4,17 @@
 #define EPSILON 1e-4
 
 #if !defined(__CUDACC__) && !defined(__OPENCL_VERSION__)
-typedef struct gpu_float4 {
-	float v4[4];
-} gpu_float4 __attribute ((aligned(16)));
-#else
-#define gpu_float4 float4
+typedef struct float4 {
+	float x, y, z, w;
+} float4 __attribute ((aligned(16)));
 #endif
 
 typedef struct camera {
-	gpu_float4 pos;
-	gpu_float4 dir;
-	gpu_float4 up;
-	gpu_float4 right;
+	float4 pos;
+	float4 dir;
+	float4 right;
 	int width, height;
-	int _,__;
+	int pad1, pad2;
 } camera __attribute ((aligned(16)));
 
 enum type {
@@ -30,23 +27,30 @@ typedef struct shape {
 	union {
 		// SPHERE
 		struct {
-			gpu_float4 origin;	// offset 0
+			float4 origin;	// offset 0
 			float radius;	// offset 16
+			int pad_sphere11, pad_sphere12, pad_sphere13;
+			float4 pad_sphere2;
+			float4 pad_sphere3;
 		} sphere;
 		// PLANE
 		struct {
-			gpu_float4 origin;	// offset 0
-			gpu_float4 normal;	// offset 16
+			float4 origin;	// offset 0
+			float4 normal;	// offset 16
+			float4 pad_plane1;
+			float4 pad_plane2;
 		} plane;
 		// TRIANGLE
 		struct {
-			gpu_float4 v1;		// offset 0
-			gpu_float4 v2;		// offset 16
-			gpu_float4 v3;		// offset 32
+			float4 v1;		// offset 0
+			float4 v2;		// offset 16
+			float4 v3;		// offset 32
+			float4 pad_triangle;
 		} triangle;
 	};
 
 	int type;					// offset 48
+	int pad1, pad2, pad3;
 } shape;
 
 #endif /* GPU_TYPES_H_ */
