@@ -20,9 +20,9 @@ int OpenCL::init() {
 	float max_ver;
 	for (int i = 0; i < num_plats; i++) {
 		cl_uint num_devices;
-		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices));
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices));
 		cl_device_id devices[num_devices];
-		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_GPU, num_devices, devices, NULL));
+		SAFE(clGetDeviceIDs(plat[i], CL_DEVICE_TYPE_ALL, num_devices, devices, NULL));
 
 		size_t plat_info_length;
 		SAFE(clGetPlatformInfo(plat[i], CL_PLATFORM_VERSION, 0, NULL, &plat_info_length));
@@ -87,23 +87,9 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 	return CL_SUCCESS;
 }
 
-device_mem OpenCL::malloc(size_t size, permission perm) {
-	cl_mem_flags cl_perm;
-
-	switch (perm) {
-		case PERM_WRITE_ONLY:
-			cl_perm = CL_MEM_WRITE_ONLY;
-			break;
-		case PERM_READ_ONLY:
-			cl_perm = CL_MEM_READ_ONLY;
-			break;
-		case PERM_READ_WRITE:
-			cl_perm = CL_MEM_READ_WRITE;
-			break;
-	}
-
+device_mem OpenCL::malloc(size_t size, void* host_ptr, mem_flags perm) {
 	cl_mem buff;
-	SAFE_REF(buff = clCreateBuffer(context, cl_perm, size, NULL, &err));
+	SAFE_REF(buff = clCreateBuffer(context, perm, size, host_ptr, &err));
 
 	/* FIXME: Should this point to the cl_mem object, or should it just be the
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?

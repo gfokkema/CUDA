@@ -20,7 +20,10 @@ public:
 
 	virtual int init() = 0;
 
-	virtual device_mem malloc(size_t size, permission perm) = 0;
+	virtual device_mem malloc(size_t size, void* host_ptr, mem_flags perm) = 0;
+	virtual device_mem malloc(size_t size, mem_flags perm) {
+			this->malloc(size, NULL, perm);
+	};
 	virtual void read(device_mem mem, size_t size, void* data_read) = 0;
 	virtual void write(device_mem mem, size_t size, void* data_write) = 0;
 	virtual int enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,

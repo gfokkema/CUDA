@@ -8,15 +8,15 @@ RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 	size_t cam_size = _scene->_cam->size();
 
 	// Allocate memory on the device
-	this->ray_dirs = _device->malloc(cam_size * sizeof(gpu_float4), PERM_READ_WRITE);
+	this->ray_dirs = _device->malloc(cam_size * sizeof(gpu_float4), MEM_TYPE_READ_WRITE);
 
 	// Allocate memory for the shape buffer.
-	this->shapes = _device->malloc(_scene->_shapes.size() * sizeof(shape), PERM_READ_ONLY);
+	this->shapes = _device->malloc(_scene->_shapes.size() * sizeof(shape), MEM_TYPE_READ_ONLY);
 	// Perform a blocking write of the shape data to the buffer that was just allocated.
 	_device->write(this->shapes, _scene->_shapes.size() * sizeof(shape), _scene->_shapes.data());
 
 	// Allocate memory for the buffer that's to be written to.
-	this->buffer = _device->malloc(3 * cam_size * sizeof(unsigned char), PERM_WRITE_ONLY);
+	this->buffer = _device->malloc(3 * cam_size * sizeof(unsigned char), MEM_TYPE_WRITE_ONLY);
 }
 
 void RenderSession::render() {

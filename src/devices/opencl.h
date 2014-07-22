@@ -2,9 +2,9 @@
 #define OPENCL_H_
 
 #ifdef __APPLE__
-  #include <OpenCL/cl.hpp>
+  #include <OpenCL/cl.h>
 #else
-  #include <CL/cl.hpp>
+  #include <CL/cl.h>
 #endif
 
 #include <vector>
@@ -47,7 +47,7 @@ public:
 	int init();
 	int load_kernels(std::vector<std::string> kernel_path);
 
-	virtual device_mem malloc(size_t size, permission perm);
+	virtual device_mem malloc(size_t size, void* host_ptr, mem_flags perm);
 	virtual void read(device_mem mem, size_t size, void* data_read);
 	virtual void write(device_mem mem, size_t size, void* data_write);
 	virtual int enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
