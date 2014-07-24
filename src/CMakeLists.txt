@@ -7,37 +7,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake/modules" ${CMAKE_MODULE_PATH
 find_package (GLEW REQUIRED)
 find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
-find_package (CUDA)
-include_directories(/opt/cuda/include)
-IF (CUDA_FOUND)
-	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
-	add_subdirectory (cuda)
-	add_definitions(-DCUDA_FOUND)
-ENDIF (CUDA_FOUND) #CUDA not found, look for OpenCL
-
 find_package (OpenCL REQUIRED)
-include_directories (${OPENCL_INCLUDE_DIR})
+#find_package (CUDA)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	include_directories(/opt/X11/include)
-	include_directories(/opt/local/include)
-	link_directories(/opt/X11/lib)
-	link_directories(/opt/local/lib)
-	add_definitions(-Wall)
-	# Enable the 'blocks' language feature
-	add_definitions(-fblocks)
-	add_subdirectory(kernel)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-add_definitions(-std=c++11 -O3)
-
-include_directories(${CMAKE_SOURCE_DIR})
-
-add_subdirectory (devices)
-add_dependencies(devices kernel)
-add_subdirectory (util)
-add_executable (raytracer scene.cpp window.cpp session.cpp)
-
+include_directories (${CMAKE_SOURCE_DIR} ${OPENCL_INCLUDE_DIR})
 set (libraries
 	devices util
 	${OPENGL_LIBRARIES}
@@ -46,13 +19,32 @@ set (libraries
 	${GLEW_LIBRARY}
 )
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	list(APPEND libraries kernel)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_definitions (-Wall -fblocks)
+	include_directories (/opt/X11/include /opt/local/include)
+	link_directories (/opt/X11/lib /opt/local/lib)
+	add_subdirectory (kernel)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-#set(CMAKE_VERBOSE_MAKEFILE on)
+#IF (CUDA_FOUND)
+#	add_definitions(-DCUDA_FOUND)
+#	include_directories(/opt/cuda/include)
+#	list (APPEND CUDA_NVCC_FLAGS "-O3 -arch=compute_20; -code=sm_20")
+#	list (APPEND libraries cuda_kernel)
+#	add_subdirectory (cuda)
+#ENDIF (CUDA_FOUND) #CUDA not found, look for OpenCL
+
+add_definitions (-std=c++11 -O3)
+
+add_subdirectory (devices)
+add_subdirectory (util)
+add_executable (raytracer scene.cpp window.cpp session.cpp)
+
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_dependencies (devices kernel)
+	list (APPEND libraries kernel)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 target_link_libraries (raytracer ${libraries})
 
-IF (CUDA_FOUND)
-	target_link_libraries (raytracer cuda_kernel)
-ENDIF (CUDA_FOUND)
+
