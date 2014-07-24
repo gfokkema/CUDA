@@ -1,0 +1,2 @@
+/usr/bin/ar cr libkernel.a  CMakeFiles/kernel.dir/kernel.cl.c.o
+/usr/bin/ranlib libkernel.a
