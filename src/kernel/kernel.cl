@@ -1,9 +1,9 @@
-#ifndef __OPENCL_VERSION__
-#include "gpu_types.h"
 #ifndef __APPLE_KERNEL_COMPILE__
+#ifndef __OPENCL_VERSION__
 #include "opencl.h"
-#endif /* __APPLE_KERNEL_COMPILE__ */
-#endif /* __OPENCL_VERSION */
+#endif
+#endif
+#include "gpu_types.h"
 
 unsigned char
 intersect(
