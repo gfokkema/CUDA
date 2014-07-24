@@ -1,4 +1,0 @@
-/Users/skip/Programming/C++/RT-Raytracing/debug/devices/CMakeFiles/devices.dir
-/Users/skip/Programming/C++/RT-Raytracing/debug/kernel/CMakeFiles/kernel.dir
-/Users/skip/Programming/C++/RT-Raytracing/debug/CMakeFiles/raytracer.dir
-/Users/skip/Programming/C++/RT-Raytracing/debug/util/CMakeFiles/util.dir

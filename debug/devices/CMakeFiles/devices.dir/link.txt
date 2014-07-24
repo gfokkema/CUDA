@@ -1,2 +1,0 @@
-/usr/bin/ar cr libdevices.a  CMakeFiles/devices.dir/cpudevice.cpp.o CMakeFiles/devices.dir/opencl.cpp.o
-/usr/bin/ranlib libdevices.a
