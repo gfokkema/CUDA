@@ -47,4 +47,3 @@ ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries (raytracer ${libraries})
 
-
