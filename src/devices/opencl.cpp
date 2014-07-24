@@ -118,7 +118,9 @@ device_mem OpenCL::malloc(size_t size, void* host_ptr, mem_flags perm) {
 
 void OpenCL::read(device_mem mem, size_t size, void* data_read) {
 #ifdef __APPLE__
-	gcl_memcpy(data_read, (void *) mem._mem_pointer, size);
+	dispatch_sync(dp_queue, ^{
+		gcl_memcpy(data_read, (void *) mem._mem_pointer, size);
+	});
 #else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL));
@@ -127,7 +129,9 @@ void OpenCL::read(device_mem mem, size_t size, void* data_read) {
 
 void OpenCL::write(device_mem mem, size_t size, void* data_write) {
 #ifdef __APPLE__
-	gcl_memcpy((void *) mem._mem_pointer, data_write, size);
+	dispatch_sync(dp_queue, ^{
+		gcl_memcpy((void *) mem._mem_pointer, data_write, size);
+	});
 #else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL));
@@ -140,31 +144,35 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 
 #ifdef __APPLE__
 	dispatch_sync(dp_queue, ^{
-		size_t all_sizes[3] = {0};
+		size_t all_sizes[3] = {0, 0 ,0};
 		for (int i = 0; i < dim; i++) {
 			all_sizes[i] = work_size[i];
 		}
 		cl_ndrange range = {
-			dim;
-			{0,0,0};			// No offset
+			dim,
+			{0,0,0},			// No offset
 			{all_sizes[0],
 			all_sizes[1],			// range for each dimension
-			all_sizes[2]};
-			{0,0,0};			// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
+			all_sizes[2]},
+			{0,0,0}			// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
 		};
 		switch (id) {
 			case KERNEL_PRODUCE_RAY:
 				produceray_kernel(	&range,
-							(camera) *arg_values[0],
-							(cl_float4*) *arg_values[1]
+							(camera*) *((camera**)arg_values[0]),
+							(cl_float4*) *((cl_float4**)arg_values[1])
 				);
+			break;
 			case KERNEL_TRACE_RAY:
 				traceray_kernel(	&range,
-							(camera) *arg_values[0],
-							(cl_float4*) *arg_values[1],
-							(shape*) *arg_values[2],
-							(cl_uchar*) *arg_values[3]
+							(camera*) *((camera**)arg_values[0]),
+							(cl_float4*) *((cl_float4**)arg_values[1]),
+							(shape*) *((shape**)arg_values[2]),
+							(cl_uchar*) *((cl_uchar**)arg_values[3])
 				);
+			break;
+			default:
+			break;
 		}
 	});
 #else

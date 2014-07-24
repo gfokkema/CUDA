@@ -1,5 +1,5 @@
-#include "session.h"
 #include <GL/glew.h>
+#include "session.h"
 #include <cstdint>
 #include <ctime>
 
@@ -11,9 +11,9 @@ RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 	this->ray_dirs = _device->malloc(cam_size * sizeof(gpu_float4), MEM_TYPE_READ_WRITE);
 
 	// Allocate memory for the shape buffer.
-	this->shapes = _device->malloc(_scene->_shapes.size() * sizeof(shape), MEM_TYPE_READ_ONLY);
+	this->shapes = _device->malloc(_scene->_shapes.size() * sizeof(shape), _scene->_shapes.data(), MEM_TYPE_READ_ONLY | MEM_TYPE_COPY_HOST_PTR);
 	// Perform a blocking write of the shape data to the buffer that was just allocated.
-	_device->write(this->shapes, _scene->_shapes.size() * sizeof(shape), _scene->_shapes.data());
+	//_device->write(this->shapes, _scene->_shapes.size() * sizeof(shape), _scene->_shapes.data());
 
 	// Allocate memory for the buffer that's to be written to.
 	this->buffer = _device->malloc(3 * cam_size * sizeof(unsigned char), MEM_TYPE_WRITE_ONLY);
@@ -26,19 +26,20 @@ void RenderSession::render() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	camera cam = _scene->_cam->gpu_type();
+	device_mem cam_buff = _device->malloc(sizeof(camera), &cam, MEM_TYPE_READ_ONLY | MEM_TYPE_COPY_HOST_PTR);
 	size_t pr_work_size = _scene->_cam->height();
 	size_t cam_size = _scene->_cam->size();
 
 	// Arguments: cl_camera cam, float4* output
-	void* pr_arg_values[2] = { (void *) &cam, (void *) &(ray_dirs._mem_pointer) };
-	size_t pr_arg_sizes[2] = { sizeof(camera), ray_dirs._mem_size };
+	void* pr_arg_values[2] = { (void *) &(cam_buff._mem_pointer), (void *) &(ray_dirs._mem_pointer) };
+	size_t pr_arg_sizes[2] = { cam_buff._mem_size, ray_dirs._mem_size };
 
 	// Blocking call!
 	_device->enqueue_kernel_range(KERNEL_PRODUCE_RAY, 2, pr_arg_values, pr_arg_sizes, 1, &pr_work_size);
 
 	// Arguments: cl_camera cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer
-	void* tr_arg_values[4] = { &cam, &ray_dirs._mem_pointer, &shapes._mem_pointer, &buffer._mem_pointer };
-	size_t tr_arg_sizes[4] = { sizeof(camera), ray_dirs._mem_size, shapes._mem_size, buffer._mem_size };
+	void* tr_arg_values[4] = { &cam_buff._mem_pointer, &ray_dirs._mem_pointer, &shapes._mem_pointer, &buffer._mem_pointer };
+	size_t tr_arg_sizes[4] = { cam_buff._mem_size, ray_dirs._mem_size, shapes._mem_size, buffer._mem_size };
 
 	// Blocking call!
 	_device->enqueue_kernel_range(KERNEL_TRACE_RAY, 4, tr_arg_values, tr_arg_sizes, 1, &cam_size);

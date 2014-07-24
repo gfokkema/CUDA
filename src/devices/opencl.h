@@ -3,6 +3,7 @@
 
 #ifdef __APPLE__
   #include <OpenCL/opencl.h>
+//  #include "../kernel/kernel.cl.h"
 #else
   #include <CL/cl.h>
 #endif /* __APPLE__ */

@@ -4,7 +4,13 @@
 #include <cmath>
 #include <iostream>
 
+#ifdef __APPLE__
+#include <OpenCL/cl_platform.h>
+#include "../kernel/kernel.cl.h"
+#define gpu_float4 cl_float4
+#else
 #include "gpu_types.h"
+#endif /* __APPLE__ */
 
 class Vector {
 public:

@@ -35,10 +35,10 @@ int CPUDevice::traceray(Camera *cam, gpu_float4* raydirs, std::vector<shape> sha
 }
 
 unsigned char CPUDevice::intersect(Vector origin, Vector dir, shape shape) {
-	Vector trans_origin = origin - shape.sphere.origin;
+	Vector trans_origin = origin - shape.data.sp.origin;
 	float a = dir * dir;
 	float b = 2 * trans_origin * dir;
-	float c = trans_origin * trans_origin - shape.sphere.radius * shape.sphere.radius;
+	float c = trans_origin * trans_origin - shape.data.sp.radius * shape.data.sp.radius;
 
 	float disc = b * b - 4 * a * c;
 	if (disc < 0)	return 0;

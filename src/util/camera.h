@@ -25,10 +25,10 @@ public:
 	const int height() const   { return _height; };
 	const int size() const     { return _height * _width; };
 	const camera gpu_type() const { return {	pos().gpu_type(),
-												dir().gpu_type(),
-												up().gpu_type(),
-												right().gpu_type(),
-												_width, _height }; };
+							dir().gpu_type(),
+							up().gpu_type(),
+							right().gpu_type(),
+							_width, _height }; };
 private:
 	int _width, _height;
 	float _fovx;
