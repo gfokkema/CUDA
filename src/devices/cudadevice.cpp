@@ -11,7 +11,7 @@ int CUDADevice::init() {
 device_mem CUDADevice::malloc(size_t size, void* host_ptr, mem_flags perm) {
 	void* buff;
 	CU_SAFE(cudaMalloc(&buff, size));
-	if (host_ptr != NULL) CU_SAFE(cudaMemcpy(host_ptr, buff, size, cudaMemcpyHostToDevice));
+	if (host_ptr != NULL) CU_SAFE(cudaMemcpy(buff, host_ptr, size, cudaMemcpyHostToDevice));
 	return {(uintptr_t)buff, size};
 }
 
@@ -25,16 +25,19 @@ void CUDADevice::write(device_mem mem, size_t size, void* data_write) {
 
 int CUDADevice::enqueue_kernel_range(	kernel_key id, uint8_t num_args, void** arg_values,
 										size_t* arg_sizes, uint8_t dim, size_t* work_size) {
+	//
+	// FIXME: hardcoded values, because we can't really use work_size
+	//
 	dim3 threads(16,16);
-	dim3 blocks((*(camera*)arg_values[0]).width / threads.x, (*(camera*)arg_values[0]).height / threads.y);
+	dim3 blocks(640 / threads.x, 480 / threads.y);
 
 	switch (id) {
 	case KERNEL_PRODUCE_RAY:
-		cudaproduceray(blocks, threads, *(camera*)arg_values[0], *(float4**)arg_values[1]);
+		cudaproduceray(blocks, threads, *(camera**)arg_values[0], *(float4**)arg_values[1]);
 		CU_CHECK_ERROR("produce ray: ");
 		break;
 	case KERNEL_TRACE_RAY:
-		cudatraceray(blocks, threads, *(camera*)arg_values[0], *(float4**)arg_values[1], *(shape**)arg_values[2], *(unsigned char**)arg_values[3]);
+		cudatraceray(blocks, threads, *(camera**)arg_values[0], *(float4**)arg_values[1], *(shape**)arg_values[2], *(unsigned char**)arg_values[3]);
 		CU_CHECK_ERROR("trace ray: ");
 		break;
 	}
