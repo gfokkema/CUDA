@@ -22,8 +22,16 @@
 	}                                                                           \
 }
 
-extern int cudaproduceray(dim3 blocks, dim3 threads, camera* cam, float4* raydirs);
-extern int cudatraceray(dim3 blocks, dim3 threads, camera* cam, float4* read_rays, shape* read_shapes, unsigned char* write_buffer);
+extern int cudaproduceray(
+		dim3 blocks, dim3 threads,
+		__const__ camera* cam,
+		float4* raydirs);
+extern int cudatraceray(
+		dim3 blocks, dim3 threads,
+		__const__ camera* cam,
+		__const__ float4* read_rays,
+		__const__ shape* read_shapes,
+		unsigned char* write_buffer);
 
 class CUDADevice : public Device {
 public:
