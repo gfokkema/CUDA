@@ -3,9 +3,10 @@
 
 #ifdef __APPLE__
   #include <OpenCL/opencl.h>
+//  #include "../kernel/kernel.cl.h"
 #else
   #include <CL/cl.h>
-#endif
+#endif /* __APPLE__ */
 
 #include <vector>
 
@@ -44,6 +45,7 @@ public:
 	OpenCL();
 	virtual ~OpenCL();
 
+	void set_best_device();
 	int init();
 	int load_kernels(std::vector<std::string> kernel_path);
 
@@ -53,7 +55,11 @@ public:
 	virtual int enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
 					size_t* arg_sizes, uint8_t dim, size_t* work_size);
 
+#ifdef __APPLE__
+	dispatch_queue_t	dp_queue;
+#else
 	cl_command_queue 	commands;
+#endif /* __APPLE__ */
 	cl_context		context;
 protected:
 	cl_device_id		device;

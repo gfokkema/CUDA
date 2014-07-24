@@ -3,12 +3,16 @@
 
 #define EPSILON 1e-4
 
+#ifdef __APPLE_KERNEL_COMPILE__
+#define gpu_float4 float4
+#else
 #if !defined(__CUDACC__) && !defined(__OPENCL_VERSION__)
 typedef struct gpu_float4 {
 	float v4[4];
 } gpu_float4 __attribute ((aligned(16)));
 #else
 #define gpu_float4 float4
+#endif
 #endif
 
 typedef struct camera {
@@ -20,33 +24,40 @@ typedef struct camera {
 	int _,__;
 } camera __attribute ((aligned(16)));
 
-enum type {
+typedef enum _type {
 	SPHERE,
 	PLANE,
 	TRIANGLE
-};
+} shape_type;
+
+// SPHERE
+typedef struct _sphere{
+	gpu_float4 origin;	// offset 0
+	float radius;	// offset 16
+} sphere;
+
+// PLANE
+typedef struct _plane{
+	gpu_float4 origin;	// offset 0
+	gpu_float4 normal;	// offset 16
+} plane;
+
+// TRIANGLE
+typedef struct _triangle{
+	gpu_float4 v1;		// offset 0
+	gpu_float4 v2;		// offset 16
+	gpu_float4 v3;		// offset 32
+} triangle;
+
+typedef union _shape_data {
+	sphere sp;
+	plane pl;
+	triangle tr;
+} shape_data;
 
 typedef struct shape {
-	union {
-		// SPHERE
-		struct {
-			gpu_float4 origin;	// offset 0
-			float radius;	// offset 16
-		} sphere;
-		// PLANE
-		struct {
-			gpu_float4 origin;	// offset 0
-			gpu_float4 normal;	// offset 16
-		} plane;
-		// TRIANGLE
-		struct {
-			gpu_float4 v1;		// offset 0
-			gpu_float4 v2;		// offset 16
-			gpu_float4 v3;		// offset 32
-		} triangle;
-	};
-
-	int type;					// offset 48
+	shape_data data;
+	int type;
 } shape;
 
 #endif /* GPU_TYPES_H_ */

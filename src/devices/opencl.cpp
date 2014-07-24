@@ -10,7 +10,7 @@ OpenCL::OpenCL() {
 
 OpenCL::~OpenCL() {}
 
-int OpenCL::init() {
+void OpenCL::set_best_device() {
 	cl_uint num_plats;
 	SAFE(clGetPlatformIDs(0, NULL, &num_plats));
 
@@ -40,7 +40,18 @@ int OpenCL::init() {
 			exit(EXIT_FAILURE);
 		}
 	}
+}
 
+int OpenCL::init() {
+#ifdef __APPLE__
+	dp_queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_GPU, NULL);
+	if (dp_queue == NULL) {
+		dp_queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_CPU, NULL);
+	}
+	device = gcl_get_device_id_with_dispatch_queue(dp_queue);
+#else
+	this->set_best_device();
+#endif /* __APPLE__ */
 	char device_name[256];
 	char device_version[256];
 	SAFE(clGetDeviceInfo(device, CL_DEVICE_NAME, 256, device_name, NULL));
@@ -49,6 +60,7 @@ int OpenCL::init() {
 	std::cout << "Selected platform:\t" << device_version << std::endl;
 	std::cout << "Selected device:\t" << device_name << std::endl;
 
+#ifndef __APPLE__
 	SAFE_REF(context = clCreateContext(0, 1, &device, NULL, NULL, &err));
 	SAFE_REF(commands = clCreateCommandQueue(context, device, 0, &err));
 
@@ -56,6 +68,7 @@ int OpenCL::init() {
 	source_paths.push_back("../src/util/gpu_types.h");
 	source_paths.push_back("../src/kernel/kernel.cl");
 	SAFE(this->load_kernels(source_paths));
+#endif /* not __APPLE__ */
 	return CL_SUCCESS;
 }
 
@@ -88,8 +101,13 @@ int OpenCL::load_kernels(std::vector<std::string> source_paths) {
 }
 
 device_mem OpenCL::malloc(size_t size, void* host_ptr, mem_flags perm) {
+#ifdef __APPLE__
+	void* buff;
+	buff = gcl_malloc(size, host_ptr, perm);
+#else
 	cl_mem buff;
 	SAFE_REF(buff = clCreateBuffer(context, perm, size, host_ptr, &err));
+#endif
 
 	/* FIXME: Should this point to the cl_mem object, or should it just be the
 	 * cl_mem object itself (which internally is the same as _cl_mem*) ?
@@ -99,19 +117,65 @@ device_mem OpenCL::malloc(size_t size, void* host_ptr, mem_flags perm) {
 }
 
 void OpenCL::read(device_mem mem, size_t size, void* data_read) {
+#ifdef __APPLE__
+	dispatch_sync(dp_queue, ^{
+		gcl_memcpy(data_read, (void *) mem._mem_pointer, size);
+	});
+#else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueReadBuffer(commands, buff, CL_TRUE, 0, size, data_read, 0, NULL, NULL));
+#endif /* __APPLE__ */
 }
 
 void OpenCL::write(device_mem mem, size_t size, void* data_write) {
+#ifdef __APPLE__
+	dispatch_sync(dp_queue, ^{
+		gcl_memcpy((void *) mem._mem_pointer, data_write, size);
+	});
+#else
 	cl_mem buff = (cl_mem) mem._mem_pointer;
 	SAFE(clEnqueueWriteBuffer(commands, buff, CL_TRUE, 0, size, data_write, 0, NULL, NULL));
+#endif /* __APPLE__ */
 }
 
 int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_values,
 				size_t* arg_sizes, uint8_t dim, size_t* work_size) {
 	if (id >= KERNEL_COUNT)	return CL_INVALID_KERNEL;
 
+#ifdef __APPLE__
+	dispatch_sync(dp_queue, ^{
+		size_t all_sizes[3] = {0, 0 ,0};
+		for (int i = 0; i < dim; i++) {
+			all_sizes[i] = work_size[i];
+		}
+		cl_ndrange range = {
+			dim,
+			{0,0,0},			// No offset
+			{all_sizes[0],
+			all_sizes[1],			// range for each dimension
+			all_sizes[2]},
+			{0,0,0}			// local work size(s) (< MAX_WORK_ITEM_SIZES[n])
+		};
+		switch (id) {
+			case KERNEL_PRODUCE_RAY:
+				produceray_kernel(	&range,
+							(camera*) *((camera**)arg_values[0]),
+							(cl_float4*) *((cl_float4**)arg_values[1])
+				);
+			break;
+			case KERNEL_TRACE_RAY:
+				traceray_kernel(	&range,
+							(camera*) *((camera**)arg_values[0]),
+							(cl_float4*) *((cl_float4**)arg_values[1]),
+							(shape*) *((shape**)arg_values[2]),
+							(cl_uchar*) *((cl_uchar**)arg_values[3])
+				);
+			break;
+			default:
+			break;
+		}
+	});
+#else
 	cl_kernel kernel = kernels[id];
 	for (unsigned int i = 0; i < num_args; i++) {
 		SAFE(clSetKernelArg(kernel, i, arg_sizes[i], arg_values[i]));
@@ -128,6 +192,6 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 					NULL,		// wait list
 					NULL));		// return event
 	SAFE(clFinish(commands));
-
+#endif /* __APPLE__ */
 	return CL_SUCCESS;
 }
