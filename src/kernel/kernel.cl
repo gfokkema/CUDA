@@ -9,12 +9,12 @@ unsigned char
 intersect(
 		__const float4 origin,
 		float4 dir,
-		shape shape)
+		__global shape *shape)
 {
-	float4 trans_origin = origin - shape.data.sp.origin;
+	float4 trans_origin = origin - shape->data.sp.origin;
 	float a = dot(dir, dir);
 	float b = 2 * dot(trans_origin, dir);
-	float c = dot(trans_origin, trans_origin) - dot(shape.data.sp.radius, shape.data.sp.radius);
+	float c = dot(trans_origin, trans_origin) - dot(shape->data.sp.radius, shape->data.sp.radius);
 
 	float disc = b * b - 4 * a * c;
 	if (disc < 0)	return 0;
@@ -63,7 +63,7 @@ traceray(
 		__global unsigned char* write_buffer)
 {
 	int idx = get_global_id(0);
-	write_buffer[idx * 3] = intersect(cam->pos, read_rays[idx], read_shapes[0]);
+	write_buffer[idx * 3] = intersect(cam->pos, read_rays[idx], read_shapes);
 	write_buffer[idx * 3 + 1] = 0;
 	write_buffer[idx * 3 + 2] = 0;
 }

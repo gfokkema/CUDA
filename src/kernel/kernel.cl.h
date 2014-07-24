@@ -46,15 +46,9 @@ typedef union _shape_data {
 
 typedef __shape_data_unalign __attribute__ ((aligned(8))) _shape_data;
 
-typedef enum _type {
-	SPHERE,
-	PLANE,
-	TRIANGLE
-} shape_type;
-
 typedef struct shape {
   __shape_data_unalign data;
-  enum _type type;
+  cl_int type;
 } _shape_unalign;
 
 typedef _shape_unalign __attribute__ ((aligned(8))) shape;

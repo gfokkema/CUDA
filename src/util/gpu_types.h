@@ -57,7 +57,7 @@ typedef union _shape_data {
 
 typedef struct shape {
 	shape_data data;
-	enum _type type;
+	int type;
 } shape;
 
 #endif /* GPU_TYPES_H_ */

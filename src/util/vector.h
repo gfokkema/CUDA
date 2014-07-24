@@ -6,6 +6,7 @@
 
 #ifdef __APPLE__
 #include <OpenCL/cl_platform.h>
+#include "../kernel/shape_type.h"
 #include "../kernel/kernel.cl.h"
 #define gpu_float4 cl_float4
 #else

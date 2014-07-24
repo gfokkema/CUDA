@@ -68,7 +68,7 @@ static void initBlocks(void) {
   const char* build_opts = "";
   static dispatch_once_t once;
   dispatch_once(&once,
-    ^{ int err = gclBuildProgramBinaryAPPLE("OpenCL/kernel.cl", "", &bmap, build_opts);
+    ^{ int err = gclBuildProgramBinaryAPPLE("kernel/OpenCL/kernel.cl", "", &bmap, build_opts);
        if (!err) {
           assert(bmap.map[0].block_ptr == produceray_kernel && "mismatch block");
           bmap.map[0].kernel = clCreateKernel(bmap.program, "produceray", &err);
