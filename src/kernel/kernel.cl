@@ -21,8 +21,16 @@ plane_intersect(
 	// Calculate term t in the expressen 'p = o + tD'
 	float t = dot(plane_origin - origin, normal) / denom;
 	if (t < EPSILON) return 0;
+	float4 intersect = origin + t * dir;
 
-	return 255;
+	float checker_size = 2.f;
+	int u = intersect[0]/checker_size;
+	int v = intersect[2]/checker_size;
+	char uv_even = (u + v) % 2;
+	char mask_uv = uv_even >> 7;
+	unsigned char abs_uv_even = (uv_even ^ mask_uv) - mask_uv;
+
+	return abs_uv_even * 255;
 }
 
 unsigned char
