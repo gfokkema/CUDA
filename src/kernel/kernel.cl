@@ -9,7 +9,7 @@ unsigned char
 intersect(
 		__const float4 origin,
 		float4 dir,
-		__global shape *shape)
+		__constant shape *shape)
 {
 	float4 trans_origin = origin - shape->data.sp.origin;
 	float a = dot(dir, dir);
@@ -59,7 +59,7 @@ __kernel void
 traceray(
 		__constant camera* cam,
 		__global float4* read_rays,
-		__global shape* read_shapes,
+		__constant shape* read_shapes,
 		__global unsigned char* write_buffer)
 {
 	int idx = get_global_id(0);
