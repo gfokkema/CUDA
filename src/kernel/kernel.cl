@@ -23,7 +23,7 @@ plane_intersect(
 	if (t < EPSILON) return 0;
 	float4 intersect = origin + t * dir;
 
-	float checker_size = 2.f;
+	float checker_size = 0.5f;
 	int u = intersect[0]/checker_size;
 	int v = intersect[2]/checker_size;
 	char uv_even = (u + v) % 2;
