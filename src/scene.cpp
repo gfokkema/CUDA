@@ -8,7 +8,7 @@
 
 Scene::Scene(Camera* cam) : _cam(cam) {
 	// Initialize shapes here.
-	_shapes.push_back(shape { { Vector(0,0,-3).gpu_type(), .2 }, SPHERE });
+	_shapes.push_back(shape { {.pl = { Vector(0,-1,0).gpu_type(), Vector(0,1,0).gpu_type() }}, PLANE });
 }
 
 Scene::~Scene() {

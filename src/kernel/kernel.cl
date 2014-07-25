@@ -6,15 +6,36 @@
 #endif /* __OPENCL_VERSION__ */
 
 unsigned char
-intersect(
-		__const float4 origin,
-		float4 dir,
-		__constant shape *shape)
+plane_intersect(
+			__const float4 origin,
+			float4 dir,
+			__constant shape *shape)
+{
+	float4 normal = shape->data.pl.normal;
+	float4 plane_origin = shape->data.pl.origin;
+	//normal.normalize();
+
+	float denom = dot(dir,normal);
+	if (denom > -EPSILON && denom < EPSILON) return 0;
+
+	// Calculate term t in the expressen 'p = o + tD'
+	float t = dot(plane_origin - origin, normal) / denom;
+	if (t < EPSILON) return 0;
+
+	return 255;
+}
+
+unsigned char
+sphere_intersect(
+			__const float4 origin,
+			float4 dir,
+			__constant shape *shape)
 {
 	float4 trans_origin = origin - shape->data.sp.origin;
+	float4 radius = shape->data.sp.radius;
 	float a = dot(dir, dir);
 	float b = 2 * dot(trans_origin, dir);
-	float c = dot(trans_origin, trans_origin) - dot(shape->data.sp.radius, shape->data.sp.radius);
+	float c = dot(trans_origin, trans_origin) - dot(radius, radius);
 
 	float disc = b * b - 4 * a * c;
 	if (disc < 0)	return 0;
@@ -34,6 +55,25 @@ intersect(
 	else			t = t1;
 
 	return 255;
+}
+
+unsigned char
+intersect(
+		__const float4 origin,
+		float4 dir,
+		__constant shape *shape)
+{
+	switch (shape->type) {
+		case SPHERE:
+		return sphere_intersect(origin, dir, shape);
+		break;
+		case PLANE:
+		return plane_intersect(origin, dir, shape);
+		break;
+		case TRIANGLE:
+		//return triangle_intersect(origin, dir, shape);
+		break;
+	}
 }
 
 __kernel void
