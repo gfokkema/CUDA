@@ -46,6 +46,7 @@ foreach(arch ${kernel_archs})
 		OUTPUT ${bitcode_file}
 		PRE_BUILD
 		COMMAND /System/Library/Frameworks/OpenCL.framework/Libraries/openclc -D__APPLE_KERNEL_COMPILE__ -I../util -x cl -cl-std=CL1.1 -Os -arch ${arch} -emit-llvm -c ${kernel_file_str} -o ${bitcode_file}
+		DEPENDS ${kernel_full_path}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 endforeach()
@@ -53,8 +54,7 @@ endforeach()
 # The derived GCL files (kernel.cl.c and kernel.cl.h)
 add_custom_command(
 	OUTPUT ${kernel_derived_gcl}
-	COMMAND /System/Library/Frameworks/OpenCL.framework/Libraries/openclc -D__APPLE_KERNEL_COMPILE__ -I../util -x cl -cl-std=CL1.1 -cl-auto-vectorize-enable -gcl-bc-dir kernel/OpenCL -emit-gcl ${CMAKE_CURRENT_SOURCE_DIR}/kernel.cl
+	COMMAND /System/Library/Frameworks/OpenCL.framework/Libraries/openclc -D__APPLE_KERNEL_COMPILE__ -I../util -x cl -cl-std=CL1.1 -cl-auto-vectorize-enable -gcl-bc-dir kernel/OpenCL -emit-gcl ${CMAKE_CURRENT_SOURCE_DIR}/${kernel_file_str}
 	DEPENDS ${kernel_bitcode_files}
-	IMPLICIT_DEPENDS C ${kernel_full_path}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
