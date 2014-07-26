@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include "session.h"
+#include <iomanip>
 #include <cstdint>
 #include <ctime>
 
@@ -51,6 +52,7 @@ void RenderSession::render() {
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
 	std::clock_t c_end = std::clock();
-	std::cout << "Frame duration:\t" << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << " ms\r";
+	float delta_time = c_end - c_start;
+	std::cout << "\e[7mFrame duration:\t" << std::setw(5) << 1000.0 * delta_time / CLOCKS_PER_SEC << " ms"<< "\tFramerate:\t" << std::setw(5) << 1 / (delta_time / CLOCKS_PER_SEC) << " fps\r";
 	std::flush(std::cout);
 }
