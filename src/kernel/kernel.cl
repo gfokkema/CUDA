@@ -8,27 +8,24 @@ bool
 plane_intersect(
 			const ray ray,
 			__constant plane *plane,
-			float4 *new_origin,
-			float4 *normal)
+			intersection *hit)
 {
-	*normal = plane->normal;
-	*normal = normalize(*normal);
-	float4 normal_deref = *normal;
+	hit->normal = plane->normal;
 	float4 plane_origin = plane->origin;
 
-	float denom = dot(ray.dir,normal_deref);
+	float denom = dot(ray.dir, hit->normal);
 	if (denom > -EPSILON && denom < EPSILON) return false;
 
 	// Calculate term t in the expressen 'p = o + tD'
-	float t = dot(plane_origin - ray.origin, normal_deref) / denom;
+	float t = dot(plane_origin - ray.origin, hit->normal) / denom;
 	if (t < EPSILON) return false;
 
-	*new_origin = ray.origin + t * ray.dir;
+	hit->hit = ray.origin + t * ray.dir;
 	//return true;
 
 	float checker_size = 0.5f;
-	int u = (*new_origin)[0]/checker_size;
-	int v = (*new_origin)[2]/checker_size;
+	int u = (hit->hit)[0]/checker_size;
+	int v = (hit->hit)[2]/checker_size;
 	char uv_even = (u + v) % 2;
 	char mask_uv = uv_even >> 7;
 	unsigned char abs_uv_even = (uv_even ^ mask_uv) - mask_uv;
@@ -40,8 +37,7 @@ bool
 sphere_intersect(
 			const ray ray,
 			__constant sphere *sphere,
-			float4 *new_origin,
-			float4 *normal)
+			intersection *hit)
 {
 	float4 trans_origin = ray.origin - sphere->origin;
 	float a = dot(ray.dir, ray.dir);
@@ -74,10 +70,8 @@ sphere_intersect(
 	if (t1 < 0)		t = t0;
 	else			t = t1;
 
-	*normal = trans_origin + t * ray.dir;
-	// FIXME:
-	//*normal = normalize(*normal);
-	*new_origin = ray.origin + t * ray.dir;
+	hit->normal = trans_origin + t * ray.dir;
+	hit->hit = ray.origin + t * ray.dir;
 
 	return true;
 }
@@ -86,18 +80,17 @@ bool
 intersect(
 		const ray ray,
 		__constant shape *shape,
-		float4 *new_origin,
-		float4 *normal)
+		intersection *hit)
 {
 	switch (shape->type) {
 		case SPHERE:
-		return sphere_intersect(ray, &shape->data.sp, new_origin, normal);
+		return sphere_intersect(ray, &shape->data.sp, hit);
 		break;
 		case PLANE:
-		return plane_intersect(ray, &shape->data.pl, new_origin, normal);
+		return plane_intersect(ray, &shape->data.pl, hit);
 		break;
 		case TRIANGLE:
-		//return triangle_intersect(origin, dir, &shape->data.tr, new_origin, normal);
+		//return triangle_intersect(origin, dir, &shape->data.tr, hit);
 		break;
 	}
 }
@@ -106,9 +99,8 @@ float4
 shade(
 		__constant shape *shape,
 		const float4 cam_pos,
-		float4 *intersect,
-		float4 *light_pos,
-		float4 *normal)
+		intersection *hit,
+		float4 *light_pos)
 {
 		float4 ambient = (float4)(0.f,0.f,0.f,0.f);
 		float4 diffuse = (float4)(0.f,0.f,0.f,0.f);
@@ -117,18 +109,13 @@ shade(
 		float4 Ks = (float4)(1.f,1.f,1.f,1.f);
 
 		/* Diffuse */
-		float4 light_vec = *light_pos - *intersect;
-		float4 normal_deref = *normal;
-		normal_deref = normalize(normal_deref);
-		light_vec = normalize(light_vec);
-		float dot_prod = dot(normal_deref, light_vec);
+		float4 light_vec = normalize(*light_pos - hit->hit);
+		float dot_prod = dot(hit->normal, light_vec);
 		diffuse = dot_prod * Kd;
 
 		/* Specular */
-		float4 reflect = 2 * dot(light_vec, normal_deref) * normal_deref - light_vec;
-		reflect = normalize(reflect);
-		float4 view = cam_pos - *intersect;
-		view = normalize(view);
+		float4 reflect = normalize(2 * dot(light_vec, hit->normal) * hit->normal - light_vec);
+		float4 view = normalize(cam_pos - hit->hit);
 		float dot_prod_spec = dot(view, reflect);
 		if (dot_prod_spec >= 0) {
 			float shininess = 10;
@@ -176,33 +163,29 @@ traceray(
 	float4 light_pos = (float4)(2.f,3.f,1.f,0.f);
 
 	float current_depth = FLT_MAX;
-	bool intersection = false;
-	float4 new_origin;
-	float4 new_normal;
 	int shape_index;
 
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
 	ray ray = { cam->pos, read_ray_dirs[idx] };
+	intersection new_hit;
 	for (int i = 0; i < num_shapes; i++) {
-		float4 hit, normal;
-		if (intersect(ray, read_shapes + i, &hit, &normal)) {
-			float new_depth = length(hit - cam->pos);
+		intersection hit;
+		if (intersect(ray, read_shapes + i, &hit)) {
+			float new_depth = length(hit.hit - cam->pos);
 			if (new_depth < current_depth) {
-				intersection = true;
 				current_depth = new_depth;
 				// Store shape index
 				shape_index = i;
-				new_origin = hit;
-				new_normal = normal;
+				new_hit = hit;
 			}
 		}
 	}
 
-	if (!intersection) {
+	if (current_depth == FLT_MAX) {
 		fill_buffer((float4)(0.f,0.f,0.f,0.f), (write_buffer + idx * 3));
 		return;
 	}
 
 	// TODO:Calculate reflected ray
-	fill_buffer(shade(read_shapes + shape_index, cam->pos, &new_origin, &light_pos, &new_normal), (write_buffer + idx * 3));
+	fill_buffer(shade(read_shapes + shape_index, cam->pos, &new_hit, &light_pos), (write_buffer + idx * 3));
 }

@@ -67,4 +67,9 @@ typedef struct shape {
 	int type;
 } shape;
 
+typedef struct intersection {
+	gpu_float4 hit;
+	gpu_float4 normal;
+} intersection;
+
 #endif /* GPU_TYPES_H_ */
