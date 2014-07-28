@@ -69,10 +69,12 @@ namespace {
 	* Time dependent keyboard function
 	*/
 	void handle_keyboard(float dt) {
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) cam.strafe(-1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cam.strafe(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) cam.move(1.f, dt);
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) cam.move(-1.f, dt);
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)	cam.move({-1,  0,  0}, dt);
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)	cam.move({ 1,  0,  0}, dt);
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)		cam.move({ 0,  0,  1}, dt);
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)	cam.move({ 0,  0, -1}, dt);
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)	cam.move({ 0,  1,  0}, dt);
+		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)		cam.move({ 0, -1,  0}, dt);
 	}
 
 	void handle_input(float dt) {

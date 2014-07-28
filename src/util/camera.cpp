@@ -1,11 +1,9 @@
 #include "camera.h"
 
-void Camera::strafe(float velocity, float dt) {
-	_pos += velocity * dt * (_dir % _up);
-}
-
-void Camera::move(float velocity, float dt) {
-	_pos += velocity * dt * _dir;
+void Camera::move(Vector dir, float dt) {
+	_pos += dt * (	dir[0] * _dir % _up +
+					dir[1] * _up +
+					dir[2] * _dir);
 }
 
 void Camera::lookAt(float x, float y) {

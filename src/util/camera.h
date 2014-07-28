@@ -9,8 +9,7 @@ public:
 		: _width(width), _height(height), _pos(pos), _dir(dir), _up(up) {};
 	~Camera() {};
 
-	void strafe(float velocity, float dt);
-	void move(float velocity, float dt);
+	void move(Vector dir, float dt);
 	void lookAt(float x, float y);
 
 	const Vector pos() const   { return _pos; };
