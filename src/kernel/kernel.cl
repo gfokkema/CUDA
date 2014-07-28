@@ -116,13 +116,10 @@ shade(
 		float4 *normal)
 {
 		float4 light_vec = *light_pos - *intersect;
-		float4 normal_deref = *normal;
-		normalize(light_vec);
-		float dot_prod = dot(normal_deref, light_vec);
-		if (dot_prod < 0)
-			dot_prod = dot(-normal_deref, light_vec);
+		light_vec = normalize(light_vec);
+
 		float4 Kd = (float4)(1.f,0.f,0.f,0.f);
-		return dot_prod * Kd;
+		return dot(*normal, light_vec) * Kd;
 }
 
 __kernel void
