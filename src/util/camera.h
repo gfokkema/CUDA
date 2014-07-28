@@ -7,7 +7,7 @@
 
 class Camera {
 public:
-	Camera(int width, int height, float angle = 45, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
+	Camera(int width, int height, float angle = 60, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
 		: _width(width), _height(height),
 		  _fovx(tanf(angle / 360 * 2 * M_PI)),
 		  _pos(pos), _dir(dir), _right{_fovx, 0, 0} {}
