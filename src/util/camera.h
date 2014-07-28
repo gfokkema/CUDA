@@ -7,10 +7,8 @@
 
 class Camera {
 public:
-	Camera(int width, int height, float angle = 60, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
-		: _width(width), _height(height),
-		  _fovx(tanf(angle / 360 * 2 * M_PI)),
-		  _pos(pos), _dir(dir), _right{_fovx, 0, 0} {}
+	Camera(int width, int height, float angle = 45, Vector pos = Vector(0,0,0), Vector dir = Vector(0,0,-1))
+		: _width(width), _height(height), _pos(pos), _dir(dir), _right{tanf(angle / 360 * 2 * M_PI), 0, 0} {}
 	~Camera() {};
 
 	void strafe(float velocity, float dt);
@@ -31,7 +29,6 @@ public:
 							_width, _height }; };
 private:
 	int _width, _height;
-	float _fovx;
 	Vector _pos;
 	Vector _dir;
 	Vector _right;
