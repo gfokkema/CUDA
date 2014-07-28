@@ -139,7 +139,8 @@ shade(
 			float shininess = 10;
 			specular = pow(dot_prod_spec, shininess) * Ks;
 		}
-		return (specular + diffuse);
+		float4 color = clamp(specular + diffuse, 0.f, 1.f);	
+		return color;
 }
 
 __kernel void
