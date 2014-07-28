@@ -191,8 +191,6 @@ traceray(
 			if (new_depth < current_depth) {
 				intersection = true;
 				current_depth = new_depth;
-				normal = new_normal;
-				new_origin = new_new_origin;
 				// Store shape index
 				shape_index = i;
 				new_origin = hit;
