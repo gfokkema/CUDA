@@ -186,11 +186,15 @@ traceray(
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
 	ray ray = { cam->pos, read_ray_dirs[idx] };
 	for (int i = 0; i < num_shapes; i++) {
-		if (intersect(ray, read_shapes + i, &new_origin, &normal)) {
-			float new_depth = length(new_origin - cam->pos);
+		float4 new_new_origin;
+		float4 new_normal;
+		if (intersect(ray, read_shapes + i, &new_new_origin, &new_normal)) {
+			float new_depth = length(new_new_origin - cam->pos);
 			if (new_depth < current_depth) {
 				intersection = true;
 				current_depth = new_depth;
+				normal = new_normal;
+				new_origin = new_new_origin;
 				// Store shape index
 				shape_index = i;
 			}
