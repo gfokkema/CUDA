@@ -3,9 +3,12 @@
 #include "devices/device.h"
 #include "scene.h"
 
+#include <ctime>
+
 class RenderSession {
 public:
 	RenderSession(Device* device, Scene* scene);
+	~RenderSession();
 	void render();
 private:
 	Device* _device;
@@ -14,6 +17,8 @@ private:
 	device_mem ray_dirs;
 	device_mem shapes;
 	device_mem buffer;
+	std::clock_t _start;
+	unsigned frames = 0;
 };
 
 #endif /* RENDER_SESSION_H_ */

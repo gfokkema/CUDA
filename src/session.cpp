@@ -2,7 +2,6 @@
 #include "session.h"
 #include <iomanip>
 #include <cstdint>
-#include <ctime>
 
 RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _scene(scene)
 {
@@ -18,6 +17,16 @@ RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 
 	// Allocate memory for the buffer that's to be written to.
 	this->buffer = _device->malloc(3 * cam_size * sizeof(unsigned char), MEM_TYPE_WRITE_ONLY);
+
+	_start = std::clock();
+}
+
+RenderSession::~RenderSession() {
+	float delta_time = std::clock() - _start;
+	printf("Elapsed time: %f\n", delta_time / CLOCKS_PER_SEC);
+	printf("Frames: %d\n", frames);
+	printf("Average Frame: %f ms\n", 1000 * delta_time / (CLOCKS_PER_SEC * frames));
+	printf("Average FPS: %f\n", float(frames) / (delta_time / CLOCKS_PER_SEC));
 }
 
 void RenderSession::render() {
@@ -65,4 +74,7 @@ void RenderSession::render() {
 	float delta_time = c_end - c_start;
 	std::cout << "\e[7mFrame duration:\t" << std::setw(5) << 1000.0 * delta_time / CLOCKS_PER_SEC << " ms"<< "\tFramerate:\t" << std::setw(5) << 1 / (delta_time / CLOCKS_PER_SEC) << " fps\r";
 	std::flush(std::cout);
+
+	// GLOBAL COUNTER
+	frames++;
 }
