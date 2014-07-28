@@ -1,9 +1,8 @@
-#ifndef __OPENCL_VERSION__
-#include "gpu_types.h"
-#ifndef __APPLE_KERNEL_COMPILE__
+#if !defined(__OPENCL_VERSION__) && !defined(__APPLE_KERNEL_COMPILE__)
 #include "opencl.h"
-#endif /* __APPLE_KERNEL_COMPILE__ */
-#endif /* __OPENCL_VERSION__ */
+#endif
+
+#include "gpu_types.h"
 
 bool
 plane_intersect(
