@@ -54,4 +54,4 @@ typedef struct shape {
 typedef _shape_unalign __attribute__ ((aligned(8))) shape;
 
 extern void (^produceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* output);
-extern void (^traceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_uchar* write_buffer);
+extern void (^traceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_int num_shapes, cl_uchar* write_buffer);

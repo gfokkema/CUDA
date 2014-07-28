@@ -131,6 +131,7 @@ traceray(
 		__constant camera* cam,
 		__global float4* read_ray_dirs,
 		__constant shape* read_shapes,
+		int num_shapes,
 		__global unsigned char* write_buffer)
 {
 	int idx = get_global_id(0);
@@ -140,15 +141,18 @@ traceray(
 	bool intersection = false;
 	float4 new_origin;
 	float4 normal;
+	int shape_index;
+
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
-	//  for (int i = 0; i < num_shapes; i++) {
-	if (intersect(cam->pos, read_ray_dirs[idx], read_shapes, &new_origin, &normal)) {
-		float new_depth = length(new_origin - origin);
-		if (new_depth < current_depth) {
-			intersection = true;
-			current_depth = new_depth;
-			// Store shape index
-			//  shape_index = i;
+	for (int i = 0; i < num_shapes; i++) {
+		if (intersect(cam->pos, read_ray_dirs[idx], read_shapes + i, &new_origin, &normal)) {
+			float new_depth = length(new_origin - origin);
+			if (new_depth < current_depth) {
+				intersection = true;
+				current_depth = new_depth;
+				// Store shape index
+				shape_index = i;
+			}
 		}
 	}
 

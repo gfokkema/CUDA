@@ -168,7 +168,8 @@ int OpenCL::enqueue_kernel_range(kernel_key id, uint8_t num_args, void** arg_val
 							(camera*) *((camera**)arg_values[0]),
 							(cl_float4*) *((cl_float4**)arg_values[1]),
 							(shape*) *((shape**)arg_values[2]),
-							(cl_uchar*) *((cl_uchar**)arg_values[3])
+							(cl_int) *((cl_int*)arg_values[3]),
+							(cl_uchar*) *((cl_uchar**)arg_values[4])
 				);
 			break;
 			default:

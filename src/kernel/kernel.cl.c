@@ -41,8 +41,8 @@ void (^produceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* out
   gclDeleteArgsAPPLE(k, &kargs);
 };
 
-void (^traceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_uchar* write_buffer) =
-^(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_uchar* write_buffer) {
+void (^traceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_int num_shapes, cl_uchar* write_buffer) =
+^(const cl_ndrange *ndrange, camera* cam, cl_float4* read_ray_dirs, shape* read_shapes, cl_int num_shapes, cl_uchar* write_buffer) {
   int err = 0;
   cl_kernel k = bmap.map[1].kernel;
   if (!k) {
@@ -56,7 +56,8 @@ void (^traceray_kernel)(const cl_ndrange *ndrange, camera* cam, cl_float4* read_
   err |= gclSetKernelArgMemAPPLE(k, 0, cam, &kargs);
   err |= gclSetKernelArgMemAPPLE(k, 1, read_ray_dirs, &kargs);
   err |= gclSetKernelArgMemAPPLE(k, 2, read_shapes, &kargs);
-  err |= gclSetKernelArgMemAPPLE(k, 3, write_buffer, &kargs);
+  err |= gclSetKernelArgAPPLE(k, 3, sizeof(num_shapes), &num_shapes, &kargs);
+  err |= gclSetKernelArgMemAPPLE(k, 4, write_buffer, &kargs);
   gcl_log_cl_fatal(err, "setting argument for traceray failed");
   err = gclExecKernelAPPLE(k, ndrange, &kargs);
   gcl_log_cl_fatal(err, "Executing traceray failed");
