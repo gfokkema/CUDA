@@ -7,8 +7,8 @@
 
 bool
 plane_intersect(
-			__const float4 origin,
-			float4 dir,
+			const float4 origin,
+			const float4 dir,
 			__constant shape *shape,
 			float4 *new_origin,
 			float4 *normal)
@@ -40,8 +40,8 @@ plane_intersect(
 
 bool
 sphere_intersect(
-			__const float4 origin,
-			float4 dir,
+			const float4 origin,
+			const float4 dir,
 			__constant shape *shape,
 			float4 *new_origin,
 			float4 *normal)
@@ -88,8 +88,8 @@ sphere_intersect(
 
 bool
 intersect(
-		__const float4 origin,
-		float4 dir,
+		const float4 origin,
+		const float4 dir,
 		__constant shape *shape,
 		float4 *new_origin,
 		float4 *normal)
@@ -110,7 +110,7 @@ intersect(
 float4
 shade(
 		__constant shape *shape,
-		float4 *cam_pos,
+		const float4 cam_pos,
 		float4 *intersect,
 		float4 *light_pos,
 		float4 *normal)
@@ -132,7 +132,7 @@ shade(
 		/* Specular */
 		float4 reflect = 2 * dot(light_vec, normal_deref) * normal_deref - light_vec;
 		reflect = normalize(reflect);
-		float4 view = *cam_pos - *intersect;
+		float4 view = cam_pos - *intersect;
 		view = normalize(view);
 		float dot_prod_spec = dot(view, reflect);
 		if (dot_prod_spec >= 0) {
@@ -205,5 +205,5 @@ traceray(
 	}
 
 	// TODO:Calculate reflected ray
-	fill_buffer(shade(read_shapes + shape_index, &origin, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
+	fill_buffer(shade(read_shapes + shape_index, origin, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
 }
