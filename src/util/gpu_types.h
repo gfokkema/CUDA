@@ -15,6 +15,11 @@ typedef struct gpu_float4 {
 #endif
 #endif
 
+typedef struct ray {
+	gpu_float4 origin;
+	gpu_float4 dir;
+} ray;
+
 typedef struct camera {
 	gpu_float4 pos;
 	gpu_float4 dir;
@@ -57,6 +62,8 @@ typedef union _shape_data {
 
 typedef struct shape {
 	shape_data data;
+
+	/* enum shape_type */
 	int type;
 } shape;
 

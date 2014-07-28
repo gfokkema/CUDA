@@ -5,48 +5,55 @@
 #endif /* __APPLE_KERNEL_COMPILE__ */
 #endif /* __OPENCL_VERSION__ */
 
-unsigned char
+bool
 plane_intersect(
 			__const float4 origin,
 			float4 dir,
-			__constant shape *shape)
+			__constant shape *shape,
+			float4 *new_origin,
+			float4 *normal)
 {
-	float4 normal = shape->data.pl.normal;
+	*normal = shape->data.pl.normal;
+	*normal = normalize(*normal);
+	float4 normal_deref = *normal;
 	float4 plane_origin = shape->data.pl.origin;
-	//normal.normalize();
 
-	float denom = dot(dir,normal);
-	if (denom > -EPSILON && denom < EPSILON) return 0;
+	float denom = dot(dir,normal_deref);
+	if (denom > -EPSILON && denom < EPSILON) return false;
 
 	// Calculate term t in the expressen 'p = o + tD'
-	float t = dot(plane_origin - origin, normal) / denom;
-	if (t < EPSILON) return 0;
-	float4 intersect = origin + t * dir;
+	float t = dot(plane_origin - origin, normal_deref) / denom;
+	if (t < EPSILON) return false;
+
+	*new_origin = origin + t * dir;
+	//return true;
 
 	float checker_size = 0.5f;
-	int u = intersect[0]/checker_size;
-	int v = intersect[2]/checker_size;
+	int u = (*new_origin)[0]/checker_size;
+	int v = (*new_origin)[2]/checker_size;
 	char uv_even = (u + v) % 2;
 	char mask_uv = uv_even >> 7;
 	unsigned char abs_uv_even = (uv_even ^ mask_uv) - mask_uv;
-
-	return abs_uv_even * 255;
+	bool even = (bool) abs_uv_even;
+	return even;
 }
 
-unsigned char
+bool
 sphere_intersect(
 			__const float4 origin,
 			float4 dir,
-			__constant shape *shape)
+			__constant shape *shape,
+			float4 *new_origin,
+			float4 *normal)
 {
 	float4 trans_origin = origin - shape->data.sp.origin;
-	float4 radius = shape->data.sp.radius;
+	float radius = shape->data.sp.radius;
 	float a = dot(dir, dir);
 	float b = 2 * dot(trans_origin, dir);
 	float c = dot(trans_origin, trans_origin) - dot(radius, radius);
 
 	float disc = b * b - 4 * a * c;
-	if (disc < 0)	return 0;
+	if (disc < 0)	return false;
 
 	// We use the following in place of the quadratic formula for
 	// more numeric precision.
@@ -55,31 +62,41 @@ sphere_intersect(
 				-0.5 * (b - sqrt(disc));
 	float t0 = q / a;
 	float t1 = c / q;
-	//if (t0 < t1) swap(t0,t1);
+
+	// FIXME: Does this work?
+	// Swap the old value at address &t0 with t1, return the old value
+	// at &t0.
+	//if (t0 < t1) t1 = atomic_xchg(&t0, t1);
 
 	float t;
-	if (t0 < EPSILON)	return 0;
+	if (t0 < EPSILON)	return false;
 	if (t1 < 0)		t = t0;
 	else			t = t1;
 
-	return 255;
+	*normal = trans_origin + t * dir;
+	*normal = normalize(*normal);
+	*new_origin = origin + t * dir;
+
+	return true;
 }
 
-unsigned char
+bool
 intersect(
 		__const float4 origin,
 		float4 dir,
-		__constant shape *shape)
+		__constant shape *shape,
+		float4 *new_origin,
+		float4 *normal)
 {
 	switch (shape->type) {
 		case SPHERE:
-		return sphere_intersect(origin, dir, shape);
+		return sphere_intersect(origin, dir, shape, new_origin, normal);
 		break;
 		case PLANE:
-		return plane_intersect(origin, dir, shape);
+		return plane_intersect(origin, dir, shape, new_origin, normal);
 		break;
 		case TRIANGLE:
-		//return triangle_intersect(origin, dir, shape);
+		//return triangle_intersect(origin, dir, shape, new_origin, normal);
 		break;
 	}
 }
@@ -103,15 +120,43 @@ produceray(
 	}
 }
 
+void fill_buffer(float4 color, __global unsigned char *write_buffer) {
+	write_buffer[0] = (unsigned char) (color.s0 * 255);
+	write_buffer[1] = (unsigned char) (color.s1 * 255);
+	write_buffer[2] = (unsigned char) (color.s2 * 255);
+}
+
 __kernel void
 traceray(
 		__constant camera* cam,
-		__global float4* read_rays,
+		__global float4* read_ray_dirs,
 		__constant shape* read_shapes,
 		__global unsigned char* write_buffer)
 {
 	int idx = get_global_id(0);
-	write_buffer[idx * 3] = intersect(cam->pos, read_rays[idx], read_shapes);
-	write_buffer[idx * 3 + 1] = 0;
-	write_buffer[idx * 3 + 2] = 0;
+
+	float4 origin = cam->pos;
+	float current_depth = FLT_MAX;
+	bool intersection = false;
+	float4 new_origin;
+	float4 normal;
+	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
+	//  for (int i = 0; i < num_shapes; i++) {
+	if (intersect(cam->pos, read_ray_dirs[idx], read_shapes, &new_origin, &normal)) {
+		float new_depth = length(new_origin - origin);
+		if (new_depth < current_depth) {
+			intersection = true;
+			current_depth = new_depth;
+			// Store shape index
+			//  shape_index = i;
+		}
+	}
+
+	if (!intersection) {
+		fill_buffer((float4)(0.f,0.f,0.f,0.f), (write_buffer + idx * 3));
+		return;
+	}
+
+	// TODO:Calculate reflected ray
+	fill_buffer((float4)(1.f,0.f,0.f,0.f), (write_buffer + idx * 3));
 }
