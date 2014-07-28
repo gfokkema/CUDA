@@ -115,14 +115,31 @@ shade(
 		float4 *light_pos,
 		float4 *normal)
 {
+		//float4 ambient = (float4)(0.f,0.f,0.f,0.f);
+		float4 diffuse = (float4)(0.f,0.f,0.f,0.f);
+		float4 specular = (float4)(0.f,0.f,0.f,0.f);
+		float4 Kd = (float4)(1.f,0.f,0.f,0.f);
+		float4 Ks = (float4)(1.f,1.f,1.f,1.f);
+
+		/* Diffuse */
 		float4 light_vec = *light_pos - *intersect;
 		float4 normal_deref = *normal;
-		normalize(light_vec);
+		normal_deref = normalize(normal_deref);
+		light_vec = normalize(light_vec);
 		float dot_prod = dot(normal_deref, light_vec);
-		if (dot_prod < 0)
-			dot_prod = dot(-normal_deref, light_vec);
-		float4 Kd = (float4)(1.f,0.f,0.f,0.f);
-		return dot_prod * Kd;
+		diffuse = dot_prod * Kd;
+
+		/* Specular */
+		float4 reflect = 2 * dot(light_vec, normal_deref) * normal_deref - light_vec;
+		reflect = normalize(reflect);
+		float4 view = *cam_pos - *intersect;
+		view = normalize(view);
+		float dot_prod_spec = dot(view, reflect);
+		if (dot_prod_spec >= 0) {
+			float shininess = 10;
+			specular = pow(dot_prod_spec, shininess) * Ks;
+		}
+		return (specular + diffuse);
 }
 
 __kernel void
