@@ -115,7 +115,7 @@ shade(
 		float4 *light_pos,
 		float4 *normal)
 {
-		//float4 ambient = (float4)(0.f,0.f,0.f,0.f);
+		float4 ambient = (float4)(0.f,0.f,0.f,0.f);
 		float4 diffuse = (float4)(0.f,0.f,0.f,0.f);
 		float4 specular = (float4)(0.f,0.f,0.f,0.f);
 		float4 Kd = (float4)(1.f,0.f,0.f,0.f);
@@ -139,8 +139,7 @@ shade(
 			float shininess = 10;
 			specular = pow(dot_prod_spec, shininess) * Ks;
 		}
-		float4 color = clamp(specular + diffuse, 0.f, 1.f);	
-		return color;
+		return ambient + diffuse + specular;
 }
 
 __kernel void
@@ -163,9 +162,10 @@ produceray(
 }
 
 void fill_buffer(float4 color, __global unsigned char *write_buffer) {
-	write_buffer[0] = (unsigned char) (color.s0 * 255);
-	write_buffer[1] = (unsigned char) (color.s1 * 255);
-	write_buffer[2] = (unsigned char) (color.s2 * 255);
+	float4 final_color = clamp(color, 0.f, 1.f);	
+	write_buffer[0] = (unsigned char) (final_color.s0 * 255);
+	write_buffer[1] = (unsigned char) (final_color.s1 * 255);
+	write_buffer[2] = (unsigned char) (final_color.s2 * 255);
 }
 
 __kernel void
