@@ -67,6 +67,11 @@ sphere_intersect(
 	// Swap the old value at address &t0 with t1, return the old value
 	// at &t0.
 	//if (t0 < t1) t1 = atomic_xchg(&t0, t1);
+	if (t0 < t1) {
+		float temp = t0;
+		t0 = t1;
+		t1 = temp;
+	}
 
 	float t;
 	if (t0 < EPSILON)	return false;
@@ -74,7 +79,8 @@ sphere_intersect(
 	else			t = t1;
 
 	*normal = trans_origin + t * dir;
-	*normal = normalize(*normal);
+	// FIXME:
+	//*normal = normalize(*normal);
 	*new_origin = origin + t * dir;
 
 	return true;
@@ -99,6 +105,24 @@ intersect(
 		//return triangle_intersect(origin, dir, shape, new_origin, normal);
 		break;
 	}
+}
+
+float4
+shade(
+		__constant shape *shape,
+		float4 *cam_pos,
+		float4 *intersect,
+		float4 *light_pos,
+		float4 *normal)
+{
+		float4 light_vec = *light_pos - *intersect;
+		float4 normal_deref = *normal;
+		normalize(light_vec);
+		float dot_prod = dot(normal_deref, light_vec);
+		if (dot_prod < 0)
+			dot_prod = dot(-normal_deref, light_vec);
+		float4 Kd = (float4)(1.f,0.f,0.f,0.f);
+		return dot_prod * Kd;
 }
 
 __kernel void
@@ -141,6 +165,7 @@ traceray(
 	bool intersection = false;
 	float4 new_origin;
 	float4 normal;
+	float4 light_pos = (float4)(2.f,3.f,1.f,0.f);
 	int shape_index;
 
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
@@ -162,5 +187,5 @@ traceray(
 	}
 
 	// TODO:Calculate reflected ray
-	fill_buffer((float4)(1.f,0.f,0.f,0.f), (write_buffer + idx * 3));
+	fill_buffer(shade(read_shapes + shape_index, &origin, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
 }

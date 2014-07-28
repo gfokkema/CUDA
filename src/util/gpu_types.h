@@ -29,7 +29,7 @@ typedef struct camera {
 	int _,__;
 } camera __attribute ((aligned(16)));
 
-typedef enum _type {
+typedef enum shape_type_ {
 	SPHERE,
 	PLANE,
 	TRIANGLE
