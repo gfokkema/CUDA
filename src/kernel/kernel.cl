@@ -7,8 +7,7 @@
 
 bool
 plane_intersect(
-			const float4 origin,
-			const float4 dir,
+			const ray ray,
 			__constant shape *shape,
 			float4 *new_origin,
 			float4 *normal)
@@ -18,14 +17,14 @@ plane_intersect(
 	float4 normal_deref = *normal;
 	float4 plane_origin = shape->data.pl.origin;
 
-	float denom = dot(dir,normal_deref);
+	float denom = dot(ray.dir,normal_deref);
 	if (denom > -EPSILON && denom < EPSILON) return false;
 
 	// Calculate term t in the expressen 'p = o + tD'
-	float t = dot(plane_origin - origin, normal_deref) / denom;
+	float t = dot(plane_origin - ray.origin, normal_deref) / denom;
 	if (t < EPSILON) return false;
 
-	*new_origin = origin + t * dir;
+	*new_origin = ray.origin + t * ray.dir;
 	//return true;
 
 	float checker_size = 0.5f;
@@ -40,16 +39,15 @@ plane_intersect(
 
 bool
 sphere_intersect(
-			const float4 origin,
-			const float4 dir,
+			const ray ray,
 			__constant shape *shape,
 			float4 *new_origin,
 			float4 *normal)
 {
-	float4 trans_origin = origin - shape->data.sp.origin;
+	float4 trans_origin = ray.origin - shape->data.sp.origin;
 	float radius = shape->data.sp.radius;
-	float a = dot(dir, dir);
-	float b = 2 * dot(trans_origin, dir);
+	float a = dot(ray.dir, ray.dir);
+	float b = 2 * dot(trans_origin, ray.dir);
 	float c = dot(trans_origin, trans_origin) - dot(radius, radius);
 
 	float disc = b * b - 4 * a * c;
@@ -78,28 +76,27 @@ sphere_intersect(
 	if (t1 < 0)		t = t0;
 	else			t = t1;
 
-	*normal = trans_origin + t * dir;
+	*normal = trans_origin + t * ray.dir;
 	// FIXME:
 	//*normal = normalize(*normal);
-	*new_origin = origin + t * dir;
+	*new_origin = ray.origin + t * ray.dir;
 
 	return true;
 }
 
 bool
 intersect(
-		const float4 origin,
-		const float4 dir,
+		const ray ray,
 		__constant shape *shape,
 		float4 *new_origin,
 		float4 *normal)
 {
 	switch (shape->type) {
 		case SPHERE:
-		return sphere_intersect(origin, dir, shape, new_origin, normal);
+		return sphere_intersect(ray, shape, new_origin, normal);
 		break;
 		case PLANE:
-		return plane_intersect(origin, dir, shape, new_origin, normal);
+		return plane_intersect(ray, shape, new_origin, normal);
 		break;
 		case TRIANGLE:
 		//return triangle_intersect(origin, dir, shape, new_origin, normal);
@@ -178,18 +175,19 @@ traceray(
 {
 	int idx = get_global_id(0);
 
-	float4 origin = cam->pos;
+	float4 light_pos = (float4)(2.f,3.f,1.f,0.f);
+
 	float current_depth = FLT_MAX;
 	bool intersection = false;
 	float4 new_origin;
 	float4 normal;
-	float4 light_pos = (float4)(2.f,3.f,1.f,0.f);
 	int shape_index;
 
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
+	ray ray = { cam->pos, read_ray_dirs[idx] };
 	for (int i = 0; i < num_shapes; i++) {
-		if (intersect(cam->pos, read_ray_dirs[idx], read_shapes + i, &new_origin, &normal)) {
-			float new_depth = length(new_origin - origin);
+		if (intersect(ray, read_shapes + i, &new_origin, &normal)) {
+			float new_depth = length(new_origin - cam->pos);
 			if (new_depth < current_depth) {
 				intersection = true;
 				current_depth = new_depth;
@@ -205,5 +203,5 @@ traceray(
 	}
 
 	// TODO:Calculate reflected ray
-	fill_buffer(shade(read_shapes + shape_index, origin, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
+	fill_buffer(shade(read_shapes + shape_index, cam->pos, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
 }
