@@ -8,14 +8,14 @@
 bool
 plane_intersect(
 			const ray ray,
-			__constant shape *shape,
+			__constant plane *plane,
 			float4 *new_origin,
 			float4 *normal)
 {
-	*normal = shape->data.pl.normal;
+	*normal = plane->normal;
 	*normal = normalize(*normal);
 	float4 normal_deref = *normal;
-	float4 plane_origin = shape->data.pl.origin;
+	float4 plane_origin = plane->origin;
 
 	float denom = dot(ray.dir,normal_deref);
 	if (denom > -EPSILON && denom < EPSILON) return false;
@@ -40,15 +40,14 @@ plane_intersect(
 bool
 sphere_intersect(
 			const ray ray,
-			__constant shape *shape,
+			__constant sphere *sphere,
 			float4 *new_origin,
 			float4 *normal)
 {
-	float4 trans_origin = ray.origin - shape->data.sp.origin;
-	float radius = shape->data.sp.radius;
+	float4 trans_origin = ray.origin - sphere->origin;
 	float a = dot(ray.dir, ray.dir);
 	float b = 2 * dot(trans_origin, ray.dir);
-	float c = dot(trans_origin, trans_origin) - dot(radius, radius);
+	float c = dot(trans_origin, trans_origin) - dot(sphere->radius, sphere->radius);
 
 	float disc = b * b - 4 * a * c;
 	if (disc < 0)	return false;
@@ -93,13 +92,13 @@ intersect(
 {
 	switch (shape->type) {
 		case SPHERE:
-		return sphere_intersect(ray, shape, new_origin, normal);
+		return sphere_intersect(ray, &shape->data.sp, new_origin, normal);
 		break;
 		case PLANE:
-		return plane_intersect(ray, shape, new_origin, normal);
+		return plane_intersect(ray, &shape->data.pl, new_origin, normal);
 		break;
 		case TRIANGLE:
-		//return triangle_intersect(origin, dir, shape, new_origin, normal);
+		//return triangle_intersect(origin, dir, &shape->data.tr, new_origin, normal);
 		break;
 	}
 }
