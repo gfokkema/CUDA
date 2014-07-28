@@ -8,7 +8,7 @@ find_package (GLEW REQUIRED)
 find_package (glfw REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (OpenCL REQUIRED)
-find_package (CUDA)
+#find_package (CUDA)
 
 include_directories (${CMAKE_SOURCE_DIR} ${OPENCL_INCLUDE_DIR})
 set (libraries

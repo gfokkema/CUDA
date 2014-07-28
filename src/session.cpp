@@ -53,7 +53,7 @@ void RenderSession::render() {
 	size_t tr_arg_sizes[5] = { cam_buff._mem_size, ray_dirs._mem_size, shapes._mem_size, sizeof(int), buffer._mem_size };
 
 	// Blocking call!
-	_device->enqueue_kernel_range(KERNEL_TRACE_RAY, 4, tr_arg_values, tr_arg_sizes, 1, &cam_size);
+	_device->enqueue_kernel_range(KERNEL_TRACE_RAY, 5, tr_arg_values, tr_arg_sizes, 1, &cam_size);
 
 	// TODO: remainder should probably be in a different function
 	unsigned char* buffer_result = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
