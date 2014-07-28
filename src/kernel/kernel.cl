@@ -179,19 +179,22 @@ traceray(
 	float current_depth = FLT_MAX;
 	bool intersection = false;
 	float4 new_origin;
-	float4 normal;
+	float4 new_normal;
 	int shape_index;
 
 	// TODO: add for-loop which loops though all the shapes (needs num_shapes argument)
 	ray ray = { cam->pos, read_ray_dirs[idx] };
 	for (int i = 0; i < num_shapes; i++) {
-		if (intersect(ray, read_shapes + i, &new_origin, &normal)) {
-			float new_depth = length(new_origin - cam->pos);
+		float4 hit, normal;
+		if (intersect(ray, read_shapes + i, &hit, &normal)) {
+			float new_depth = length(hit - cam->pos);
 			if (new_depth < current_depth) {
 				intersection = true;
 				current_depth = new_depth;
 				// Store shape index
 				shape_index = i;
+				new_origin = hit;
+				new_normal = normal;
 			}
 		}
 	}
@@ -202,5 +205,5 @@ traceray(
 	}
 
 	// TODO:Calculate reflected ray
-	fill_buffer(shade(read_shapes + shape_index, cam->pos, &new_origin, &light_pos, &normal), (write_buffer + idx * 3));
+	fill_buffer(shade(read_shapes + shape_index, cam->pos, &new_origin, &light_pos, &new_normal), (write_buffer + idx * 3));
 }
