@@ -17,7 +17,7 @@ private:
 	device_mem ray_dirs;
 	device_mem shapes;
 	device_mem buffer;
-	std::clock_t _start;
+	std::chrono::time_point<std::chrono::system_clock> _start;
 	unsigned frames = 0;
 };
 

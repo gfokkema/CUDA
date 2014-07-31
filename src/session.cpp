@@ -18,20 +18,23 @@ RenderSession::RenderSession(Device* device, Scene* scene) : _device(device), _s
 	// Allocate memory for the buffer that's to be written to.
 	this->buffer = _device->malloc(3 * cam_size * sizeof(unsigned char), MEM_TYPE_WRITE_ONLY);
 
-	_start = std::clock();
+	_start = std::chrono::system_clock::now();
 }
 
 RenderSession::~RenderSession() {
-	float delta_time = std::clock() - _start;
-	printf("Elapsed time: %f\n", delta_time / CLOCKS_PER_SEC);
-	printf("Frames: %d\n", frames);
-	printf("Average Frame: %f ms\n", 1000 * delta_time / (CLOCKS_PER_SEC * frames));
-	printf("Average FPS: %f\n", float(frames) / (delta_time / CLOCKS_PER_SEC));
+	std::chrono::time_point<std::chrono::system_clock> _end;
+	_end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = _end-_start;
+
+	std::cout<<"Elapsed time: "<< elapsed_seconds.count() << "s\n";
+	std::cout<<"Frames: "<<frames<<"\n";
+	std::cout<<"Average FPS: "<<(frames/elapsed_seconds.count()) << std::endl;
 }
 
 void RenderSession::render() {
 	//Time the rendering process
-	std::clock_t c_start = std::clock();
+	std::chrono::time_point<std::chrono::system_clock> start;
+	start = std::chrono::system_clock::now();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -70,9 +73,12 @@ void RenderSession::render() {
 	_device->read(this->buffer, 3 * cam_size * sizeof(unsigned char), buffer_result);
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
-	std::clock_t c_end = std::clock();
-	float delta_time = c_end - c_start;
-	std::cout << "\e[7mFrame duration:\t" << std::setw(5) << 1000.0 * delta_time / CLOCKS_PER_SEC << " ms"<< "\tFramerate:\t" << std::setw(5) << 1 / (delta_time / CLOCKS_PER_SEC) << " fps\r";
+	std::chrono::time_point<std::chrono::system_clock> end;
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<double, std::milli> delta_time = end - start;
+	std::chrono::duration<double> delta_time_sec = end - start;
+
+	std::cout << "\e[7mFrame duration:\t" << std::setw(5) << delta_time.count() << " ms"<< "\tFramerate:\t" << std::setw(5) << 1 / delta_time_sec.count() << " fps\r";
 	std::flush(std::cout);
 
 	// GLOBAL COUNTER
