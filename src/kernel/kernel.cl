@@ -25,8 +25,8 @@ plane_intersect(
 
 	// checkerboard texture
 	float checker_size = 0.5f;
-	int u = (hit->hit)[0]/checker_size;
-	int v = (hit->hit)[2]/checker_size;
+	int u = floor((hit->hit)[0]/checker_size);
+	int v = floor((hit->hit)[2]/checker_size);
 
 	return (bool) ((u + v) & 1);
 }
