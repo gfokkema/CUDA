@@ -23,14 +23,12 @@ plane_intersect(
 	hit->hit = ray.origin + t * ray.dir;
 	//return true;
 
+	// checkerboard texture
 	float checker_size = 0.5f;
 	int u = (hit->hit)[0]/checker_size;
 	int v = (hit->hit)[2]/checker_size;
-	char uv_even = (u + v) % 2;
-	char mask_uv = uv_even >> 7;
-	unsigned char abs_uv_even = (uv_even ^ mask_uv) - mask_uv;
-	bool even = (bool) abs_uv_even;
-	return even;
+
+	return (bool) ((u + v) & 1);
 }
 
 bool
@@ -49,6 +47,7 @@ sphere_intersect(
 
 	// We use the following in place of the quadratic formula for
 	// more numeric precision.
+	// FIXME: use ternary select function instead of ternary if-else statement
 	float q = (b > 0) ?
 				-0.5 * (b + sqrt(disc)) :
 				-0.5 * (b - sqrt(disc));
@@ -67,6 +66,7 @@ sphere_intersect(
 
 	float t;
 	if (t0 < EPSILON)	return false;
+	// FIXME: use ternary select function
 	if (t1 < 0)		t = t0;
 	else			t = t1;
 
