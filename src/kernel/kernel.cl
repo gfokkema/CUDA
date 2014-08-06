@@ -23,11 +23,12 @@ plane_intersect(
 	hit->hit = ray.origin + t * ray.dir;
 	//return true;
 
-	// checkerboard texture
+	// Checkerboard texture procedure
 	float checker_size = 0.5f;
 	int u = floor((hit->hit)[0]/checker_size);
 	int v = floor((hit->hit)[2]/checker_size);
 
+	// True if u + v is odd
 	return (bool) ((u + v) & 1);
 }
 
