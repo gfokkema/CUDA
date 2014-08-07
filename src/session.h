@@ -3,7 +3,7 @@
 #include "devices/device.h"
 #include "scene.h"
 
-#include <ctime>
+#include <chrono>
 
 class RenderSession {
 public:
