@@ -3,9 +3,7 @@
 
 #include <unistd.h>
 
-#include "devices/cudadevice.h"
 #include "devices/cpudevice.h"
-#include "devices/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
 
@@ -15,11 +13,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-#ifdef CUDA_FOUND
-	Device* device = new CUDADevice;
-#else
-	Device* device = new OpenCL;
-#endif
+	Device* device = new CPUDevice;
 	Scene scene(device);
 
 	/**
@@ -103,7 +97,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Initialize OpenCL
-	if (device->init() != CL_SUCCESS) {
+	if (device->init() != 0) {
 		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}
