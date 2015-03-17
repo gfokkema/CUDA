@@ -3,10 +3,6 @@
 
 #include <unistd.h>
 
-#ifdef CUDA_FOUND
-#include "devices/cudadevice.h"
-#endif /* CUDA_FOUND */
-#include "devices/cpudevice.h"
 #include "devices/opencl.h"
 #include "util/camera.h"
 #include "scene.h"
@@ -18,11 +14,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-#ifdef CUDA_FOUND
-	Device* device = new CUDADevice;
-#else
 	Device* device = new OpenCL;
-#endif
 	Scene* scene = new Scene(&cam);
 	RenderSession session(device, scene);
 
