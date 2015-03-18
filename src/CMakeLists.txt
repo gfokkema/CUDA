@@ -13,7 +13,6 @@ pkg_search_module (GLEW REQUIRED glew)
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory (cuda)
-add_subdirectory (devices)
 add_subdirectory (util)
 add_executable (raytracer scene.cpp window.cpp)
-target_link_libraries (raytracer devices kernel util ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY})
+target_link_libraries (raytracer kernel util ${OPENGL_LIBRARIES} ${GLFW_LIBRARY} ${GLEW_LIBRARY})

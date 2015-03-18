@@ -3,7 +3,6 @@
 
 #include <unistd.h>
 
-#include "devices/cpudevice.h"
 #include "util/camera.h"
 #include "scene.h"
 
@@ -13,8 +12,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-	Device* device = new CPUDevice;
-	Scene scene(device);
+	Scene scene;
 
 	/**
 	* Time independent keyboard function
@@ -93,12 +91,6 @@ int main(int argc, char* argv[]) {
 	// Initialize GLEW
 	if (glewInit() != GLEW_OK) {
 		std::cerr << "Failed to initialize GLEW" << std::endl;
-		return -1;
-	}
-
-	// Initialize OpenCL
-	if (device->init() != 0) {
-		std::cerr << "Failed to initialize OpenCL" << std::endl;
 		return -1;
 	}
 

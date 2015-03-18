@@ -5,6 +5,9 @@
 
 #include "util/vector.h"
 
+extern "C" int cudaproduceray(camera cam, float4*& raydirs);
+extern "C" int cudatraceray(camera cam, float4* raydirs, shape* read_shapes, unsigned char*& buffer);
+
 struct cl_shape;
 class Camera;
 class Device;
@@ -12,7 +15,7 @@ class Ray;
 
 class Scene {
 public:
-	Scene(Device* device);
+	Scene();
 	virtual ~Scene();
 
 	void setCamera(Camera* cam);

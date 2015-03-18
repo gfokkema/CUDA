@@ -3,7 +3,7 @@
 
 #define EPSILON 1e-4
 
-#if !defined(__CUDACC__) && !defined(__OPENCL_VERSION__)
+#if !defined(__CUDACC__)
 typedef struct float4 {
 	float v4[4];
 } float4 __attribute ((aligned(16)));
