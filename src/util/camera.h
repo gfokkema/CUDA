@@ -22,7 +22,7 @@ public:
 	const int width() const    { return _width; };
 	const int height() const   { return _height; };
 	const int size() const     { return _height * _width; };
-	const camera gpu_type() const { return {	_width, _height,
+	const camera_t gpu_type() const { return {	_width, _height,
 												pos().gpu_type(),
 												dir().gpu_type(),
 												up().gpu_type(),

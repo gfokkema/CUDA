@@ -9,13 +9,13 @@ typedef struct float4 {
 } float4 __attribute ((aligned(16)));
 #endif /* __CUDACC__ */
 
-typedef struct camera {
+typedef struct camera_t {
 	int width, height;
 	float4 pos;
 	float4 dir;
 	float4 up;
 	float4 right;
-} camera;
+} camera_t;
 
 enum type {
 	SPHERE,
@@ -23,7 +23,7 @@ enum type {
 	TRIANGLE
 };
 
-typedef struct shape {
+typedef struct shape_t {
 	union {
 		// SPHERE
 		struct {
@@ -44,11 +44,11 @@ typedef struct shape {
 	};
 
 	int type;					// offset 48
-} shape;
+} shape_t;
 
-typedef struct shape_list {
+typedef struct shape_list_t {
 	int size;
-	shape* shapes;
-} shape_list;
+	shape_t* shapes;
+} shape_list_t;
 
 #endif /* GPU_TYPES_H_ */

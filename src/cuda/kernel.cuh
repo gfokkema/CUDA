@@ -81,11 +81,19 @@ float4 normalize(const float4& lhs) {
 	return lhs / length(lhs);
 }
 
-extern "C" int cudaproduceray  (camera cam, float4*& raydirs);
-extern "C" int cudatraceray    (camera cam, float4* raydirs, shape* read_shapes, unsigned char* buffer);
-extern "C" int cudamallocshapes(shape*& d_shapes, shape* shapes, int size);
-extern "C" int cudamallocbuffer(unsigned char*& d_buffer, int size);
-extern "C" int cudareadbuffer  (unsigned char* buffer, unsigned char* d_buffer, int size);
-
+extern "C" int cudaproduceray  (camera_t       cam,
+                                float4*&        d_raydirs);
+extern "C" int cudatraceray    (camera_t        cam,
+                                float4*         d_raydirs,
+                                shape_t*        d_shapes,
+                                unsigned char*  d_buffer);
+extern "C" int cudamallocshapes(shape_t*&       d_shapes,
+                                shape_t*        shapes,
+                                int             size);
+extern "C" int cudamallocbuffer(unsigned char*& d_buffer,
+                                int             size);
+extern "C" int cudareadbuffer  (unsigned char*  buffer,
+                                unsigned char*  d_buffer,
+                                int size);
 
 #endif
