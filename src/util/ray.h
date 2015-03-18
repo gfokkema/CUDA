@@ -5,15 +5,14 @@
 
 class Ray {
 public:
-	Ray(Vector pos, Vector dir)
-		: _pos(pos), _dir(dir) {};
-	~Ray() {};
+    Ray(Vector pos, Vector dir) : _pos(pos), _dir(dir) {};
+    ~Ray() {};
 
-	const Vector pos() const { return _pos; };
-	const Vector dir() const { return _dir; };
+    const Vector pos() const { return _pos; };
+    const Vector dir() const { return _dir; };
 private:
-	Vector _pos;
-	Vector _dir;
+    Vector _pos;
+    Vector _dir;
 };
 
 #endif /* RAY_CPP_ */

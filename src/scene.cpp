@@ -1,8 +1,8 @@
 #include <chrono>
 #include <iomanip>
+#include <vector>
 
 #include "scene.h"
-
 #include "util/camera.h"
 #include "util/ray.h"
 
