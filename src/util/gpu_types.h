@@ -46,4 +46,9 @@ typedef struct shape {
 	int type;					// offset 48
 } shape;
 
+typedef struct shape_list {
+	int size;
+	shape* shapes;
+} shape_list;
+
 #endif /* GPU_TYPES_H_ */

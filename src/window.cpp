@@ -12,7 +12,7 @@
 namespace {
 	GLFWwindow* window;
 	Camera cam(WIDTH, HEIGHT);
-	Scene scene;
+	Scene scene(&cam);
 
 	/**
 	* Time independent keyboard function
@@ -93,8 +93,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Failed to initialize GLEW" << std::endl;
 		return -1;
 	}
-
-	scene.setCamera(&cam);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
