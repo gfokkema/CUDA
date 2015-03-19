@@ -27,11 +27,12 @@ Scene::Scene(Camera* cam)
 {
     // Initialize shapes here.
     std::vector<shape_t> shapes;
-    shapes.push_back({ { Vector(0,0,-3).gpu_type(), .2 }, SPHERE });
+    shapes.push_back({ { Vector(0,0,-3).gpu_type(), .2 }, SPHERE, 0.f, { 255, 0,   0 } });
+    shapes.push_back({ { Vector(2,0,-3).gpu_type(), .2 }, SPHERE, 1.f, { 255, 255, 0 } });
 
     SAFE( cudaMalloc(&d_buffer,  p_cam->size() * sizeof(float4)) );
     SAFE( cudaMalloc(&d_random,  p_cam->size() * sizeof(float4)) );
-    SAFE( cudaMalloc(&d_raydirs, p_cam->size() * sizeof(float4)) );
+    SAFE( cudaMalloc(&d_raydirs, p_cam->size() * sizeof(ray_t)) );
     SAFE( cudaMalloc(&d_shapes,  shapes.size() * sizeof(shape_t)) );
     SAFE( cudaMemcpy( d_shapes,  shapes.data(), shapes.size() * sizeof(shape_t), cudaMemcpyHostToDevice) );
 }
@@ -44,12 +45,12 @@ Scene::~Scene()
     SAFE( cudaFree(d_buffer) );
 }
 
-void Scene::render(unsigned char* buffer)
+void Scene::render(color_t* buffer)
 {
     start_timer();
     cudaproduceray(p_cam->gpu_type(), d_raydirs);
-    cudatraceray  (p_cam->gpu_type(), d_raydirs, d_shapes, d_buffer);
+    cudapathtrace (p_cam->gpu_type(), (color_t*)d_buffer, d_random, d_raydirs, d_shapes, 2); // FIXME: hardcoded shape size
 
-    SAFE( cudaMemcpy( buffer, d_buffer, 3 * p_cam->size() * sizeof(unsigned char), cudaMemcpyDeviceToHost) );
+    SAFE( cudaMemcpy( buffer, d_buffer, p_cam->size() * sizeof(color_t), cudaMemcpyDeviceToHost) );
     end_timer();
 }

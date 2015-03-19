@@ -2,19 +2,21 @@
 #include "host_kernels.cuh"
 
 __global__
-void produceray(__const__ camera_t cam, float4* raydirs) {
+void produceray(__const__ camera_t cam, ray_t* raydirs) {
     unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
 
-    float x = (xi + .5) / cam.width - 0.5;
-    float y = (yi + .5) / cam.height - 0.5;
+    float x = 2 * (xi + .5) / cam.width  - 1;
+    float y = 2 * (yi + .5) / cam.height - 1;
 
-    raydirs[yi * cam.width + xi] = normalize(x * cam.right + y * cam.up + cam.dir);
+    int idx = yi * cam.width + xi;
+    raydirs[idx].pos = cam.pos + cam.dir + x * cam.right + y * cam.up;
+    raydirs[idx].dir = normalize(raydirs[idx].pos - cam.pos);
 }
 
 __host__
 int cudaproduceray(camera_t cam,
-                   float4*& d_raydirs)
+                   ray_t* d_raydirs)
 {
     // Perform computation on device
     dim3 threadsperblock(8, 8);

@@ -15,13 +15,13 @@ public:
     Scene         (Camera* cam);
     virtual ~Scene();
 
-    void render       (unsigned char* buffer);
+    void render       (color_t* buffer);
     const Vector trace(const Ray& ray);
 private:
     Camera*        p_cam;
-    unsigned char* d_buffer;
+    color_t*       d_buffer;
     float4*        d_random;
-    float4*        d_raydirs;
+    ray_t*         d_raydirs;
     shape_t*       d_shapes;
 };
 

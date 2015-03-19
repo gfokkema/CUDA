@@ -1,4 +1,5 @@
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
+#include <cfloat>
 
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
@@ -10,6 +11,10 @@ enum type {
     PLANE,
     TRIANGLE
 };
+
+typedef struct color_t {
+    unsigned char r, g, b;
+} color_t;
 
 typedef struct shape_t {
     union {
@@ -31,13 +36,10 @@ typedef struct shape_t {
         } triangle;
     };
 
-    int type;					// offset 48
+    int     type;                // offset 48
+    float   emit;
+    color_t color;
 } shape_t;
-
-typedef struct shape_list_t {
-    int size;
-    shape_t* shapes;
-} shape_list_t;
 
 typedef struct camera_t
 {
@@ -56,7 +58,9 @@ typedef struct ray_t
 
 typedef struct hit_t
 {
-    float4  hit;
+    float4 pos;
+    float4 normal;
+    float4 color;
     shape_t object;
 } hit_t;
 

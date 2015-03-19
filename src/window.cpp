@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Map the buffer and render the scene
-        unsigned char* buffer = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        color_t* buffer = (color_t*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         scene.render(buffer);
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 

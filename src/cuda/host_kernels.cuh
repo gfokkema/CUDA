@@ -30,23 +30,20 @@
         }                                                                           \
 }
 
-extern "C" int cudamallocshapes(shape_t*&       d_shapes,
-        shape_t*        shapes,
-        int             size);
-extern "C" int cudamallocbuffer(unsigned char*& d_buffer,
-        int             size);
-extern "C" int cudareadbuffer  (unsigned char*  buffer,
-        unsigned char*  d_buffer,
-        int size);
-extern "C" int cudaproduceray  (camera_t        cam,
-                                float4*&        d_raydirs);
-extern "C" int cudapathtrace   (camera_t        cam,
-                                float4*         d_raydirs,
-                                shape_t*        d_shapes,
-                                unsigned char*  d_buffer);
-extern "C" int cudatraceray    (camera_t        cam,
-                                float4*         d_raydirs,
-                                shape_t*        d_shapes,
-                                unsigned char*  d_buffer);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int cudaproduceray  (camera_t        cam,
+                     ray_t*          d_raydirs);
+int cudapathtrace   (camera_t        cam,
+                     color_t*        d_buffer,
+                     float4*         d_random,
+                     ray_t*          d_raydirs,
+                     shape_t*        d_shapes, int num_shapes);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /** __HOST_KERNELS_CUH */
