@@ -1,21 +1,9 @@
+#include "cuda_runtime.h"
+
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
 
 #define EPSILON 1e-4
-
-#ifndef __CUDACC__
-typedef struct float4 {
-    float v4[4];
-} float4 __attribute ((aligned(16)));
-#endif /* __CUDACC__ */
-
-typedef struct camera_t {
-    int width, height;
-    float4 pos;
-    float4 dir;
-    float4 up;
-    float4 right;
-} camera_t;
 
 enum type {
     SPHERE,
@@ -50,5 +38,26 @@ typedef struct shape_list_t {
     int size;
     shape_t* shapes;
 } shape_list_t;
+
+typedef struct camera_t
+{
+    int width, height;
+    float4 pos;
+    float4 dir;
+    float4 up;
+    float4 right;
+} camera_t;
+
+typedef struct ray_t
+{
+    float4 pos;
+    float4 dir;
+} ray_t;
+
+typedef struct hit_t
+{
+    float4  hit;
+    shape_t object;
+} hit_t;
 
 #endif /* GPU_TYPES_H_ */

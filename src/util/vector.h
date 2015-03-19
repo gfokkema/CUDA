@@ -1,16 +1,13 @@
+#include "../common.h"
+
 #ifndef __VECTOR_H_
 #define __VECTOR_H_
-
-#include <cmath>
-#include <iostream>
-
-#include "gpu_types.h"
 
 class Vector {
 public:
     Vector() : v{0, 0, 0} {};
     Vector(float x, float y, float z) : v{x, y, z} {};
-    Vector(float4 cl) : v{cl.v4[0], cl.v4[1], cl.v4[2]} {};
+    Vector(float4 cl) : v{cl.x, cl.y, cl.z} {};
     ~Vector() {};
 
     /**

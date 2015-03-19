@@ -1,9 +1,8 @@
+#include "gpu_types.h"
+#include "vector.h"
+
 #ifndef CAMERA_H_
 #define CAMERA_H_
-
-#include <cmath>
-
-#include "vector.h"
 
 class Camera {
 public:

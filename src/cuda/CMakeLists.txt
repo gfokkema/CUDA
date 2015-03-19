@@ -1,1 +1,8 @@
-cuda_add_library (kernel host_kernels.cu trace.cu produce.cu)
+set (kernel_sources
+	host_kernels.cu
+	produce.cu
+	trace.cu
+	pathtrace.cu
+)
+
+cuda_add_library (kernel ${kernel_sources})

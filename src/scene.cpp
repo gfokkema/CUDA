@@ -1,10 +1,4 @@
-#include <chrono>
-#include <iomanip>
-#include <vector>
-
 #include "scene.h"
-#include "util/camera.h"
-#include "util/ray.h"
 
 std::chrono::time_point<std::chrono::system_clock> start;
 
@@ -35,7 +29,6 @@ Scene::Scene(Camera* cam)
     shapes.push_back({ { Vector(0,0,-3).gpu_type(), .2 }, SPHERE });
 
     cudamallocbuffer(this->d_buffer, p_cam->size());
-    //	cudamallocshapes(this->d_shapes, shape_list_t { (int)shapes.size(), shapes.data() });
     cudamallocshapes(this->d_shapes, shapes.data(), shapes.size());
 
 }

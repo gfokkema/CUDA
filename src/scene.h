@@ -1,8 +1,11 @@
+#include "common.h"
+#include "cuda/host_kernels.cuh"
+
+#include <chrono>
+#include <iomanip>
+
 #ifndef SCENE_H_
 #define SCENE_H_
-
-#include "cuda/host_kernels.cuh"
-#include "util/vector.h"
 
 class Camera;
 class Ray;
@@ -16,10 +19,10 @@ public:
     const Vector trace(const Ray& ray);
 private:
     Camera*        p_cam;
-    shape_list_t   p_shapes;
     unsigned char* d_buffer;
-    shape_t*       d_shapes;
+    float4*        d_random;
     float4*        d_raydirs;
+    shape_t*       d_shapes;
 };
 
 #endif /* SCENE_H_ */

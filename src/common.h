@@ -1,7 +1,5 @@
-#include "../util/gpu_types.h"
-
-#ifndef __HOST_KERNELS_CUH
-#define __HOST_KERNELS_CUH
+#ifndef __COMMON_H
+#define __COMMON_H
 
 #define EPSILON 1e-4
 
@@ -30,23 +28,14 @@
         }                                                                           \
 }
 
-extern "C" int cudamallocshapes(shape_t*&       d_shapes,
-        shape_t*        shapes,
-        int             size);
-extern "C" int cudamallocbuffer(unsigned char*& d_buffer,
-        int             size);
-extern "C" int cudareadbuffer  (unsigned char*  buffer,
-        unsigned char*  d_buffer,
-        int size);
-extern "C" int cudaproduceray  (camera_t        cam,
-                                float4*&        d_raydirs);
-extern "C" int cudapathtrace   (camera_t        cam,
-                                float4*         d_raydirs,
-                                shape_t*        d_shapes,
-                                unsigned char*  d_buffer);
-extern "C" int cudatraceray    (camera_t        cam,
-                                float4*         d_raydirs,
-                                shape_t*        d_shapes,
-                                unsigned char*  d_buffer);
+#include <cmath>
+#include <cuda_runtime.h>
+#include <iostream>
+#include <vector>
 
-#endif /** __HOST_KERNELS_CUH */
+#include "util/camera.h"
+#include "util/gpu_types.h"
+#include "util/ray.h"
+#include "util/vector.h"
+
+#endif /** __COMMON_H */

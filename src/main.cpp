@@ -1,5 +1,4 @@
-#include "util/camera.h"
-#include "util/vector.h"
+#include "common.h"
 
 int main() {
 	Vector vec1(1,2,3);
