@@ -16,9 +16,6 @@ __host__
 int cudaproduceray(camera_t cam,
                    float4*& d_raydirs)
 {
-    unsigned size = cam.height * cam.width;
-    SAFE(cudaMalloc(&d_raydirs, size * sizeof(float4)));
-
     // Perform computation on device
     dim3 threadsperblock(8, 8);
     dim3 numblocks(cam.width / threadsperblock.x,

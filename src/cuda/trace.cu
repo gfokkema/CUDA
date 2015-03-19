@@ -59,6 +59,5 @@ cudatraceray(camera_t       cam,
     traceray <<< numblocks,threadsperblock >>> (cam, d_raydirs, d_shapes, d_buffer);
     CHECK_ERROR("Launching trace kernel");
 
-    cudaFree(d_raydirs);
     return 0;
 }
