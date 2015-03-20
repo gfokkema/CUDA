@@ -3,62 +3,81 @@
 
 #define EPSILON 1e-4
 
-enum type {
+enum shape_type
+{
     SPHERE,
     PLANE,
     TRIANGLE
 };
 
-typedef struct color_t {
+enum mat_type
+{
+    DIFFUSE,
+    TRANSPARENT,
+    MIRROR
+};
+
+typedef struct color_t
+{
     unsigned char r, g, b;
 } color_t;
 
-typedef struct shape_t {
-    union {
+typedef struct shape_t
+{
+    union
+    {
         // SPHERE
-        struct {
+        struct
+        {
             float4 origin;	// offset 0
             float radius;	// offset 16
         } sphere;
         // PLANE
-        struct {
+        struct
+        {
             float4 origin;	// offset 0
             float4 normal;	// offset 16
         } plane;
         // TRIANGLE
-        struct {
+        struct
+        {
             float4 v1;		// offset 0
             float4 v2;		// offset 16
             float4 v3;		// offset 32
         } triangle;
     };
-
-    int     type;                // offset 48
-    float   emit;
-    color_t color;
+    short      matidx;
+    shape_type type;
 } shape_t;
+
+typedef struct mat_t {
+    color_t    color;
+    float      emit;         // Emittance in range 0..1
+    float      n;            // Refractive index
+    float      brdf;         // FIXME
+    mat_type   type;
+} mat_t;
 
 typedef struct camera_t
 {
     int width, height;
-    float4 pos;
-    float4 dir;
-    float4 up;
-    float4 right;
+    float4     pos;
+    float4     dir;
+    float4     up;
+    float4     right;
 } camera_t;
 
 typedef struct ray_t
 {
-    float4 pos;
-    float4 dir;
+    float4     pos;
+    float4     dir;
 } ray_t;
 
 typedef struct hit_t
 {
-    float4 pos;
-    float4 normal;
-    float4 color;
-    shape_t object;
+    float4     pos;
+    float4     normal;
+    short      matidx;
 } hit_t;
 
 #endif /* GPU_TYPES_H_ */

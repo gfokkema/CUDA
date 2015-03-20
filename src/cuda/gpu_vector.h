@@ -34,6 +34,15 @@ float4 operator*(const float4& lhs, const float& rhs) {
 }
 
 __device__ inline
+color_t operator*(const float& lhs, const color_t& rhs) {
+    color_t retval;
+    retval.r = lhs * rhs.r;
+    retval.g = lhs * rhs.g;
+    retval.b = lhs * rhs.b;
+    return retval;
+}
+
+__device__ inline
 float4 operator/(const float4& lhs, const float& rhs) {
     float4 retval;
     retval.x = lhs.x / rhs;

@@ -30,7 +30,7 @@ intersect(ray_t& ray, shape_t& shape, hit_t* hit)
 
     hit->pos    = ray.pos + t * ray.dir;
     hit->normal = normalize(hit->pos);
-    hit->object = shape;
+    hit->matidx = shape.matidx;
 
     return true;
 }
@@ -40,6 +40,7 @@ void
 pathtraceray(camera_t         cam,
              color_t*         d_buffer,
              float4*          d_random,
+             mat_t*           d_materials,
              ray_t*           d_raydirs,
              shape_t*         d_shapes, int num_shapes)
 {
@@ -69,9 +70,10 @@ pathtraceray(camera_t         cam,
         return;
     }
 
-    if (hit.object.emit > 0)
+    if (d_materials[hit.matidx].emit > 0)
     {
-        d_buffer[idx]     = hit.object.color;
+        d_buffer[idx]     = d_materials[hit.matidx].emit * d_materials[hit.matidx].color;
+        return;
     }
 }
 
@@ -79,6 +81,7 @@ int
 cudapathtrace(camera_t        cam,
               color_t*        d_buffer,
               float4*         d_random,
+              mat_t*          d_materials,
               ray_t*          d_raydirs,
               shape_t*        d_shapes, int num_shapes)
 {
@@ -93,11 +96,15 @@ cudapathtrace(camera_t        cam,
     dim3 threadsperblock(8, 8);
     dim3 numblocks(cam.width / threadsperblock.x,
                    cam.height / threadsperblock.y);
-    pathtraceray <<< numblocks,threadsperblock >>> (cam,
-                                                    d_buffer,
-                                                    d_random,
-                                                    d_raydirs,
-                                                    d_shapes, num_shapes);
+    for (int i = 0; i < 4; i++)
+    {
+        pathtraceray <<< numblocks,threadsperblock >>> (cam,
+                                                        d_buffer,
+                                                        d_random,
+                                                        d_materials,
+                                                        d_raydirs,
+                                                        d_shapes, num_shapes);
+    }
 
     CHECK_ERROR("Launching pathtrace kernel");
 
