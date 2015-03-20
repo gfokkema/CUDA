@@ -19,6 +19,15 @@ float4 operator-(const float4& lhs, const float4& rhs) {
     return retval;
 }
 
+//__device__ inline
+//float operator*(const float4& lhs, const float4& rhs) {
+//    float4 retval;
+//    retval.x = lhs.x * rhs.x;
+//    retval.y = lhs.x * rhs.y;
+//    retval.z = lhs.x * rhs.z;
+//    return retval;
+//}
+
 __device__ inline
 float4 operator*(const float& lhs, const float4& rhs) {
     float4 retval;
@@ -34,15 +43,6 @@ float4 operator*(const float4& lhs, const float& rhs) {
 }
 
 __device__ inline
-color_t operator*(const float& lhs, const color_t& rhs) {
-    color_t retval;
-    retval.r = lhs * rhs.r;
-    retval.g = lhs * rhs.g;
-    retval.b = lhs * rhs.b;
-    return retval;
-}
-
-__device__ inline
 float4 operator/(const float4& lhs, const float& rhs) {
     float4 retval;
     retval.x = lhs.x / rhs;
@@ -52,13 +52,13 @@ float4 operator/(const float4& lhs, const float& rhs) {
 }
 
 __device__ inline
-float operator*(const float4& lhs, const float4& rhs) {
+float dot(const float4& lhs, const float4& rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
 __device__ inline
 float length(const float4& lhs) {
-    return sqrt(lhs * lhs);
+    return sqrt(dot(lhs, lhs));
 }
 
 __device__ inline
