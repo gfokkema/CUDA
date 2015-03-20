@@ -1,10 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <unistd.h>
-
-#include "util/camera.h"
-#include "scene.h"
+#include <scene.h>
 
 #define WIDTH 640
 #define HEIGHT 480

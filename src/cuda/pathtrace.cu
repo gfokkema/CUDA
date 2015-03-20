@@ -1,7 +1,4 @@
-#include "device_util.cuh"
-#include "host_kernels.cuh"
-
-#include <curand.h>
+#include "gpu_kernels.h"
 
 #define RANDOM 12345
 

@@ -1,8 +1,5 @@
-#include <cuda_runtime.h>
-#include <stdio.h>
-
-#ifndef __VECTOR_CUH
-#define __VECTOR_CUH
+#ifndef __GPU_VECTOR_CUH
+#define __GPU_VECTOR_CUH
 
 __device__ inline
 float4 operator+(const float4& lhs, const float4& rhs) {
@@ -60,4 +57,4 @@ float4 normalize(const float4& lhs) {
     return lhs / length(lhs);
 }
 
-#endif /** __VECTOR_CUH */
+#endif /** __GPU_VECTOR_CUH */

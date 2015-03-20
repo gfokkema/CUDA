@@ -1,4 +1,11 @@
-#include "../util/gpu_types.h"
+#include <cfloat>
+#include <cmath>
+#include <curand.h>
+#include <cuda_runtime.h>
+#include <stdio.h>
+
+#include "gpu_types.h"
+#include "gpu_vector.h"
 
 #ifndef __HOST_KERNELS_CUH
 #define __HOST_KERNELS_CUH

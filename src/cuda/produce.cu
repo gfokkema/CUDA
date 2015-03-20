@@ -1,5 +1,4 @@
-#include "device_util.cuh"
-#include "host_kernels.cuh"
+#include "gpu_kernels.h"
 
 __global__
 void produceray(__const__ camera_t cam, ray_t* raydirs) {

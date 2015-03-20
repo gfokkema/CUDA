@@ -1,6 +1,3 @@
-#include <cuda_runtime.h>
-#include <cfloat>
-
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
 

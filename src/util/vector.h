@@ -1,4 +1,6 @@
-#include "../common.h"
+#include <cmath>
+#include <ostream>
+#include <cuda/gpu_types.h>
 
 #ifndef __VECTOR_H_
 #define __VECTOR_H_

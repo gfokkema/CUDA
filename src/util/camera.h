@@ -1,4 +1,5 @@
-#include "gpu_types.h"
+#include <cuda/gpu_kernels.h>
+
 #include "vector.h"
 
 #ifndef CAMERA_H_

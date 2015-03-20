@@ -1,8 +1,4 @@
 #include "common.h"
-#include "cuda/host_kernels.cuh"
-
-#include <chrono>
-#include <iomanip>
 
 #ifndef SCENE_H_
 #define SCENE_H_
