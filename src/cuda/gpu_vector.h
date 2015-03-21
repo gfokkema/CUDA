@@ -11,6 +11,15 @@ float4 operator+(const float4& lhs, const float4& rhs) {
 }
 
 __device__ inline
+float4 operator-(const float4& lhs) {
+    float4 retval;
+    retval.x = -lhs.x;
+    retval.y = -lhs.y;
+    retval.z = -lhs.z;
+    return retval;
+}
+
+__device__ inline
 float4 operator-(const float4& lhs, const float4& rhs) {
     float4 retval;
     retval.x = lhs.x - rhs.x;
@@ -19,14 +28,14 @@ float4 operator-(const float4& lhs, const float4& rhs) {
     return retval;
 }
 
-//__device__ inline
-//float operator*(const float4& lhs, const float4& rhs) {
-//    float4 retval;
-//    retval.x = lhs.x * rhs.x;
-//    retval.y = lhs.x * rhs.y;
-//    retval.z = lhs.x * rhs.z;
-//    return retval;
-//}
+__device__ inline
+float4 operator*(const float4& lhs, const float4& rhs) {
+    float4 retval;
+    retval.x = lhs.x * rhs.x;
+    retval.y = lhs.y * rhs.y;
+    retval.z = lhs.z * rhs.z;
+    return retval;
+}
 
 __device__ inline
 float4 operator*(const float& lhs, const float4& rhs) {
@@ -64,6 +73,25 @@ float length(const float4& lhs) {
 __device__ inline
 float4 normalize(const float4& lhs) {
     return lhs / length(lhs);
+}
+
+__device__ inline
+float4 reflect(const float4& raydir, const float4& normal) {
+    return raydir - 2 * dot(raydir, normal) * normal;
+}
+
+__device__ inline
+float4 randvector(const float4& randray, const float4& normal) {
+    float4 retval;
+    float phi   = randray.x * 2 * M_PI;
+    float theta = acos(randray.y * 2 - 1);
+
+    retval.x = sin(theta) * cos(phi);
+    retval.y = sin(theta) * sin(phi);
+    retval.z = cos(theta);
+    if (dot(retval, normal) < 0)
+        retval = -retval;
+    return retval;
 }
 
 #endif /** __GPU_VECTOR_CUH */

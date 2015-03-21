@@ -51,7 +51,7 @@ typedef struct shape_t
 } shape_t;
 
 typedef struct mat_t {
-    color_t    color;
+    float4     color;
     float      emit;         // Emittance in range 0..1
     float      n;            // Refractive index
     float      brdf;         // FIXME
