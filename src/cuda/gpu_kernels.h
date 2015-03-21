@@ -43,15 +43,17 @@ extern "C" {
 
 int cudaproduceray  (camera_t        cam,
                      ray_t*          d_raydirs,
-                     float4*         d_buffer);
+                     float4*         d_reflect,
+                     float4*         d_result);
 int cudapathtrace   (camera_t        cam,
+                     ray_t*          d_raydirs,
+                     float4*         d_reflect,
                      float4*         d_result,
                      float4*         d_random,
                      mat_t*          d_materials,
-                     ray_t*          d_raydirs,
                      shape_t*        d_shapes, int num_shapes);
 int cudargbtoint    (camera_t        cam,
-                     float4*         d_result,
+                     float4*         d_accum,
                      color_t*        d_buffer);
 
 #ifdef __cplusplus

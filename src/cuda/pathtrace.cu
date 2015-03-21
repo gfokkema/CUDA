@@ -38,10 +38,11 @@ intersect(ray_t& ray, shape_t& shape, hit_t* hit)
 __global__
 void
 pathtraceray(camera_t         cam,
+             ray_t*           d_raydirs,
+             float4*          d_reflect,
              float4*          d_result,
              float4*          d_random,
              mat_t*           d_materials,
-             ray_t*           d_raydirs,
              shape_t*         d_shapes, int num_shapes)
 {
     int xi = blockIdx.x * blockDim.x + threadIdx.x;
@@ -69,28 +70,18 @@ pathtraceray(camera_t         cam,
     // Check whether this ray intersected the scene, if not kill the ray
     if (dist >= FLT_MAX)
     {
-        d_result[idx]        = (float4){ 0, 0, 0, 0 };
-        d_raydirs[idx].dir.w = -1;
-        return;
-    }
-    mat_t* mat = d_materials + hit.matidx;
-
-    // Check whether we hit a light, if so kill the ray
-    if (mat->emit > 0)
-    {
-        // Should be: emission + color * (recursive path trace)
-        d_result[idx]        = d_result[idx] + d_result[idx] * d_materials[hit.matidx].emit * d_materials[hit.matidx].color;
         d_raydirs[idx].dir.w = -1;
         return;
     }
 
-    // Calculate color contribution
-    d_result[idx] = d_result[idx] * d_materials[hit.matidx].color;
+    // Should be: emission + color * (recursive path trace)
+    mat_t* mat     = d_materials + hit.matidx;
+    d_result[idx]  = d_result[idx] + d_reflect[idx] * mat->emit;   // ACCUMULATE COLOR USING REFLECT AND EMIT
+    d_reflect[idx] =                 d_reflect[idx] * mat->color;
 
     // Reflect, refract or both
     if (mat->type == MIRROR)
     {
-        float4 tempray = reflect(d_raydirs[idx].dir, hit.normal);
         d_raydirs[idx].dir = reflect(d_raydirs[idx].dir, hit.normal);
     }
     else if (mat->type == DIFFUSE)
@@ -108,17 +99,18 @@ pathtraceray(camera_t         cam,
 
 int
 cudapathtrace(camera_t        cam,
+              ray_t*          d_raydirs,
+              float4*         d_reflect,
               float4*         d_result,
               float4*         d_random,
               mat_t*          d_materials,
-              ray_t*          d_raydirs,
               shape_t*        d_shapes, int num_shapes)
 {
     unsigned size = cam.height * cam.width;
 
     curandGenerator_t gen;
     SAFE_RAND( curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT) );
-    SAFE_RAND( curandSetPseudoRandomGeneratorSeed(gen, RANDOM) );
+    SAFE_RAND( curandSetPseudoRandomGeneratorSeed(gen, time(NULL)) );
     SAFE_RAND( curandGenerateUniform(gen, (float*)d_random, 4 * size) );
 
     // Perform computation on device
@@ -128,10 +120,11 @@ cudapathtrace(camera_t        cam,
     for (int i = 0; i < 5; i++)
     {
         pathtraceray <<< numblocks,threadsperblock >>> (cam,
+                                                        d_raydirs,
+                                                        d_reflect,
                                                         d_result,
                                                         d_random,
                                                         d_materials,
-                                                        d_raydirs,
                                                         d_shapes, num_shapes);
     }
     CHECK_ERROR("Launching pathtrace kernel");
