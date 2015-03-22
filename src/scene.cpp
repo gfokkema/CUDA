@@ -2,6 +2,8 @@
 
 std::chrono::time_point<std::chrono::system_clock> start;
 
+static int sample;
+
 void start_timer()
 {
     start = std::chrono::system_clock::now();
@@ -24,12 +26,12 @@ Scene::Scene(Camera* cam)
   d_random(nullptr),
   d_materials(nullptr),
   d_raydirs(nullptr),
-  d_reflect(nullptr),
+  d_factor(nullptr),
   d_shapes(nullptr)
 {
     // mat_t { { r, g, b }, emit, n, type }
     std::vector<mat_t> materials;
-    materials.push_back({ { 1, 1, 0 }, { 1, 1, 1 }, DIFFUSE });          // 0: WHITE LIGHTING
+    materials.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, DIFFUSE });          // 0: WHITE LIGHTING
     materials.push_back({ { 1, 1, 1 }, { 0, 0, 0 }, MIRROR  });          // 1: REFLECTIVE
     materials.push_back({ { 1, 1, 1 }, { 0, 0, 0 }, DIFFUSE });          // 2: DIFFUSE WHITE
     materials.push_back({ { 0, 0, 1 }, { 0, 0, 0 }, DIFFUSE });          // 3: DIFFUSE BLUE
@@ -46,12 +48,17 @@ Scene::Scene(Camera* cam)
     shapes.push_back({ { Vector( 50,  0,  0).gpu_type(), 45 }, 3, SPHERE }); // RIGHT: BLUE
     shapes.push_back({ { Vector(-50,  0,  0).gpu_type(), 45 }, 4, SPHERE }); // LEFT:  RED
     shapes.push_back({ { Vector(  0,  0,-50).gpu_type(), 45 }, 5, SPHERE }); // BACK: GREEN
+    shapes.push_back({ { Vector(  0,  0, 50).gpu_type(), 45 }, 5, SPHERE }); // BACK: GREEN
 
-    SAFE( cudaMalloc(&d_buffer,    p_cam->size()    * sizeof(color_t)) );
-    SAFE( cudaMalloc(&d_random,    p_cam->size()    * sizeof(float4))  );
-    SAFE( cudaMalloc(&d_raydirs,   p_cam->size()    * sizeof(ray_t))   );
-    SAFE( cudaMalloc(&d_reflect,   p_cam->size()    * sizeof(float4))  );
-    SAFE( cudaMalloc(&d_result,    p_cam->size()    * sizeof(float4))  );
+    // PER PIXEL BUFFERS
+    SAFE( cudaMalloc(&d_buffer,  p_cam->size() * sizeof(color_t)) );
+    SAFE( cudaMalloc(&d_random,  p_cam->size() * sizeof(float4))  );
+    SAFE( cudaMalloc(&d_raydirs, p_cam->size() * sizeof(ray_t))   );
+    SAFE( cudaMalloc(&d_factor,  p_cam->size() * sizeof(float4))  );
+    SAFE( cudaMalloc(&d_result,  p_cam->size() * sizeof(float4))  );
+    SAFE( cudaMalloc(&d_film,    p_cam->size() * sizeof(float4))  );
+
+    // SCENE DESCRIPTION
     SAFE( cudaMalloc(&d_materials, materials.size() * sizeof(mat_t))   );
     SAFE( cudaMalloc(&d_shapes,    shapes.size()    * sizeof(shape_t)) );
     SAFE( cudaMemcpy( d_materials, materials.data(), materials.size() * sizeof(mat_t),   cudaMemcpyHostToDevice) );
@@ -61,20 +68,23 @@ Scene::Scene(Camera* cam)
 Scene::~Scene()
 {
     SAFE( cudaFree(d_shapes) );
-    SAFE( cudaFree(d_reflect) );
+    SAFE( cudaFree(d_factor) );
     SAFE( cudaFree(d_raydirs) );
     SAFE( cudaFree(d_materials) );
     SAFE( cudaFree(d_random) );
     SAFE( cudaFree(d_buffer) );
+    SAFE( cudaFree(d_film) );
 }
 
 void Scene::render(color_t* buffer)
 {
-    start_timer();
-    cudaproduceray(p_cam->gpu_type(), d_raydirs, d_reflect, d_result);
-    cudapathtrace (p_cam->gpu_type(), d_raydirs, d_reflect, d_result, d_random, d_materials, d_shapes, 7); // FIXME: hardcoded shape size
-    cudargbtoint  (p_cam->gpu_type(), d_result, d_buffer);
+//    start_timer();
+    cudaproduceray(p_cam->gpu_type(), d_raydirs, d_factor, d_result, d_film, sample);
+    cudapathtrace (p_cam->gpu_type(), d_raydirs, d_factor, d_result, d_random, d_materials, d_shapes, 8); // FIXME: hardcoded shape size
+    cudargbtoint  (p_cam->gpu_type(), d_result, d_film, sample, d_buffer);
+
+    sample++;
 
     SAFE( cudaMemcpy( buffer, d_buffer, p_cam->size() * sizeof(color_t), cudaMemcpyDeviceToHost) );
-    end_timer();
+//    end_timer();
 }

@@ -17,8 +17,9 @@ private:
     Camera*        p_cam;
     float4*        d_accum;
     color_t*       d_buffer;
+    float4*        d_factor;
+    float4*        d_film;
     ray_t*         d_raydirs;
-    float4*        d_reflect;
     float4*        d_result;
     float4*        d_random;
     mat_t*         d_materials;

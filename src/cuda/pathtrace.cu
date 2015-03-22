@@ -39,7 +39,7 @@ __global__
 void
 pathtraceray(camera_t         cam,
              ray_t*           d_raydirs,
-             float4*          d_reflect,
+             float4*          d_factor,
              float4*          d_result,
              float4*          d_random,
              mat_t*           d_materials,
@@ -49,7 +49,7 @@ pathtraceray(camera_t         cam,
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
     unsigned idx = (yi * cam.width + xi);
 
-    if (d_raydirs[idx].dir.w < 0) return;
+    if (d_factor[idx].w < 0) return;
 
     float dist = FLT_MAX;
     hit_t hit;
@@ -70,14 +70,17 @@ pathtraceray(camera_t         cam,
     // Check whether this ray intersected the scene, if not kill the ray
     if (dist >= FLT_MAX)
     {
-        d_raydirs[idx].dir.w = -1;
+        d_factor[idx].w = -1;
         return;
     }
 
-    // Should be: emission + color * (recursive path trace)
     mat_t* mat     = d_materials + hit.matidx;
-    d_result[idx]  = d_result[idx] + d_reflect[idx] * mat->emit;   // ACCUMULATE COLOR USING REFLECT AND EMIT
-    d_reflect[idx] =                 d_reflect[idx] * mat->color;
+    if (length(mat->emit) > EPSILON)
+    {
+        d_result[idx]   = d_result[idx] + d_factor[idx] * mat->emit;   // ACCUMULATE COLOR USING REFLECT AND EMIT
+        d_factor[idx].w = -1;                                          // KILL RAY
+        return;
+    }
 
     // Reflect, refract or both
     if (mat->type == MIRROR)
@@ -86,6 +89,7 @@ pathtraceray(camera_t         cam,
     }
     else if (mat->type == DIFFUSE)
     {
+        d_factor[idx]   = 4 * d_factor[idx] * dot(-d_raydirs[idx].dir, hit.normal) * mat->color;     // CALCULATE FACTOR BASED ON LAMBERTIAN DIFFUSE
         unsigned randidx = (idx + (int)dot(d_raydirs[idx].dir, d_raydirs[idx].pos)) % (cam.width * cam.height);
         d_raydirs[idx].dir = randvector(d_random[randidx], hit.normal);
     }
@@ -100,7 +104,7 @@ pathtraceray(camera_t         cam,
 int
 cudapathtrace(camera_t        cam,
               ray_t*          d_raydirs,
-              float4*         d_reflect,
+              float4*         d_factor,
               float4*         d_result,
               float4*         d_random,
               mat_t*          d_materials,
@@ -115,49 +119,19 @@ cudapathtrace(camera_t        cam,
 
     // Perform computation on device
     dim3 threadsperblock(8, 8);
-    dim3 numblocks(cam.width / threadsperblock.x,
+    dim3 numblocks(cam.width  / threadsperblock.x,
                    cam.height / threadsperblock.y);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         pathtraceray <<< numblocks,threadsperblock >>> (cam,
                                                         d_raydirs,
-                                                        d_reflect,
+                                                        d_factor,
                                                         d_result,
                                                         d_random,
                                                         d_materials,
                                                         d_shapes, num_shapes);
     }
     CHECK_ERROR("Launching pathtrace kernel");
-
-    return 0;
-}
-
-__global__
-void
-rgbtoint(camera_t      cam,
-         float4*       d_result,
-         color_t*      d_buffer)
-{
-    int xi = blockIdx.x * blockDim.x + threadIdx.x;
-    int yi = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned idx = (yi * cam.width + xi);
-
-    d_buffer[idx].r = d_result[idx].x * 255;
-    d_buffer[idx].g = d_result[idx].y * 255;
-    d_buffer[idx].b = d_result[idx].z * 255;
-}
-
-int cudargbtoint(camera_t        cam,
-                 float4*         d_result,
-                 color_t*        d_buffer)
-{
-    dim3 threadsperblock(8, 8);
-    dim3 numblocks(cam.width / threadsperblock.x,
-                   cam.height / threadsperblock.y);
-    rgbtoint <<< numblocks,threadsperblock >>> (cam,
-                                                d_result,
-                                                d_buffer);
-    CHECK_ERROR("Launching rgbtoint kernel");
 
     return 0;
 }
