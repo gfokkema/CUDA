@@ -32,23 +32,23 @@ Scene::Scene(Camera* cam)
     // mat_t { { r, g, b }, emit, n, type }
     std::vector<mat_t> materials;
     materials.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, DIFFUSE });          // 0: WHITE LIGHTING
-    materials.push_back({ { 1, 1, 1 }, { 0, 0, 0 }, MIRROR  });          // 1: REFLECTIVE
-    materials.push_back({ { 1, 1, 1 }, { 0, 0, 0 }, DIFFUSE });          // 2: DIFFUSE WHITE
-    materials.push_back({ { 0, 0, 1 }, { 0, 0, 0 }, DIFFUSE });          // 3: DIFFUSE BLUE
-    materials.push_back({ { 1, 0, 0 }, { 0, 0, 0 }, DIFFUSE });          // 4: DIFFUSE RED
-    materials.push_back({ { 0, 1, 0 }, { 0, 0, 0 }, DIFFUSE });          // 5: DIFFUSE GREEN
+    materials.push_back({ { 0, 0, 0 }, { 0, 0, 0 }, MIRROR  });          // 1: REFLECTIVE
+    materials.push_back({ {.6,.6,.6 }, { 0, 0, 0 }, DIFFUSE });          // 2: DIFFUSE WHITE
+    materials.push_back({ {.2,.2, 1 }, { 0, 0, 0 }, DIFFUSE });          // 3: DIFFUSE BLUE
+    materials.push_back({ { 1,.2,.2 }, { 0, 0, 0 }, DIFFUSE });          // 4: DIFFUSE RED
+    materials.push_back({ {.2, 1,.2 }, { 0, 0, 0 }, DIFFUSE });          // 5: DIFFUSE GREEN
 
     // Initialize shapes here.
     // shape_t { { origin, radius }, matidx, type }
     std::vector<shape_t> shapes;
-    shapes.push_back({ { Vector(  0,  0, -3).gpu_type(), .2 }, 0, SPHERE });
-    shapes.push_back({ { Vector(  2,  0, -3).gpu_type(),  1 }, 1, SPHERE });
-    shapes.push_back({ { Vector(  0, 50,  0).gpu_type(), 45 }, 2, SPHERE }); // CEILING: WHITE
-    shapes.push_back({ { Vector(  0,-50,  0).gpu_type(), 45 }, 2, SPHERE }); // FLOOR: WHITE
-    shapes.push_back({ { Vector( 50,  0,  0).gpu_type(), 45 }, 3, SPHERE }); // RIGHT: BLUE
-    shapes.push_back({ { Vector(-50,  0,  0).gpu_type(), 45 }, 4, SPHERE }); // LEFT:  RED
-    shapes.push_back({ { Vector(  0,  0,-50).gpu_type(), 45 }, 5, SPHERE }); // BACK: GREEN
-    shapes.push_back({ { Vector(  0,  0, 50).gpu_type(), 45 }, 5, SPHERE }); // BACK: GREEN
+    shapes.push_back({ { Vector(   -.5,     0,  -1.5).gpu_type(),  .3 }, 0, SPHERE });
+    shapes.push_back({ { Vector(    .5,     0,  -1.5).gpu_type(),  .3 }, 1, SPHERE });
+    shapes.push_back({ { Vector(     0, 1e5+1,     0).gpu_type(), 1e5 }, 2, SPHERE }); // CEILING: WHITE
+    shapes.push_back({ { Vector(     0,-1e5-1,     0).gpu_type(), 1e5 }, 2, SPHERE }); // FLOOR: WHITE
+    shapes.push_back({ { Vector( 1e5+1,     0,     0).gpu_type(), 1e5 }, 3, SPHERE }); // RIGHT: BLUE
+    shapes.push_back({ { Vector(-1e5-1,     0,     0).gpu_type(), 1e5 }, 4, SPHERE }); // LEFT:  RED
+    shapes.push_back({ { Vector(     0,     0,-1e5-2).gpu_type(), 1e5 }, 2, SPHERE }); // BACK: GREEN
+    shapes.push_back({ { Vector(     0,     0, 1e5+0).gpu_type(), 1e5 }, 2, SPHERE }); // BEHIND: WHITE
 
     // PER PIXEL BUFFERS
     SAFE( cudaMalloc(&d_buffer,  p_cam->size() * sizeof(color_t)) );
@@ -83,7 +83,7 @@ void Scene::render(color_t* buffer)
     cudapathtrace (p_cam->gpu_type(), d_raydirs, d_factor, d_result, d_random, d_materials, d_shapes, 8); // FIXME: hardcoded shape size
     cudargbtoint  (p_cam->gpu_type(), d_result, d_film, sample, d_buffer);
 
-    sample++;
+    printf("%d\n", sample++);
 
     SAFE( cudaMemcpy( buffer, d_buffer, p_cam->size() * sizeof(color_t), cudaMemcpyDeviceToHost) );
 //    end_timer();

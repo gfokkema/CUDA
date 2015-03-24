@@ -26,12 +26,12 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
  * Focus callback function
  */
 void focus_callback(GLFWwindow * window, int focused) {
-    if (focused) {
-        double middle_x = WIDTH/2.0;
-        double middle_y = HEIGHT/2.0;
-        glfwSetCursorPos(window, middle_x, middle_y);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
+//    if (focused) {
+//        double middle_x = WIDTH/2.0;
+//        double middle_y = HEIGHT/2.0;
+//        glfwSetCursorPos(window, middle_x, middle_y);
+//        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//    }
 }
 
 void handle_mouse() {
@@ -62,7 +62,7 @@ void handle_keyboard(float dt) {
 
 void handle_input(float dt) {
     handle_keyboard(dt);
-    handle_mouse();
+//    handle_mouse();
 }
 }
 
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Set the keyboard callback for time independent keyboard handling
     glfwSetKeyCallback(window, &key_callback);

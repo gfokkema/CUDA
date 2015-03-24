@@ -51,6 +51,13 @@ cudaproduceray(camera_t cam,
     return 0;
 }
 
+__device__
+float
+clamp(float a)
+{
+    return a > 1 ? 1 : a < 0 ? 0 : a;
+}
+
 __global__
 void
 rgbtoint(camera_t      cam,
@@ -62,11 +69,11 @@ rgbtoint(camera_t      cam,
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
     unsigned idx = (yi * cam.width + xi);
 
-    d_film[idx] = d_film[idx] + d_result[idx];
+    d_film[idx] = d_film[idx] + d_result[idx] * 1.f / (1000);
 
-    d_buffer[idx].r = (int)(d_film[idx].x / (samplecount + 1) * 255);
-    d_buffer[idx].g = (int)(d_film[idx].y / (samplecount + 1) * 255);
-    d_buffer[idx].b = (int)(d_film[idx].z / (samplecount + 1) * 255);
+    d_buffer[idx].r = (int)(clamp(d_film[idx].x) * 255);
+    d_buffer[idx].g = (int)(clamp(d_film[idx].y) * 255);
+    d_buffer[idx].b = (int)(clamp(d_film[idx].z) * 255);
 }
 
 int cudargbtoint(camera_t        cam,

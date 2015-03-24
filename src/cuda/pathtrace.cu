@@ -77,8 +77,8 @@ pathtraceray(camera_t         cam,
     mat_t* mat     = d_materials + hit.matidx;
     if (length(mat->emit) > EPSILON)
     {
-        d_result[idx]   = d_result[idx] + d_factor[idx] * mat->emit;   // ACCUMULATE COLOR USING REFLECT AND EMIT
-        d_factor[idx].w = -1;                                          // KILL RAY
+        d_result[idx]   = d_result[idx] + d_factor[idx] * mat->emit;   // ACCUMULATE COLOR USING  REFLECT AND EMIT
+//        d_factor[idx].w = -1;                                          // KILL RAY
         return;
     }
 
@@ -89,7 +89,16 @@ pathtraceray(camera_t         cam,
     }
     else if (mat->type == DIFFUSE)
     {
-        d_factor[idx]   = 4 * d_factor[idx] * dot(-d_raydirs[idx].dir, hit.normal) * mat->color;     // CALCULATE FACTOR BASED ON LAMBERTIAN DIFFUSE
+        // LAMBERT'S LAW:
+        // Le  = rho / pi * dot(L, N)
+        // rho = diffuse color 0..1
+        // L   = incoming light direction
+        // N   = surface normal
+        // sample probability is area of hemisphere, 1/2pi
+        // factor  = 1 / prob * Le
+        //         = 2pi * rho / pi * dot(L, N)
+        //         = 2 * rho * dot(L, N)
+        d_factor[idx]    = d_factor[idx] * 2 * mat->color * dot(-d_raydirs[idx].dir, hit.normal);
         unsigned randidx = (idx + (int)dot(d_raydirs[idx].dir, d_raydirs[idx].pos)) % (cam.width * cam.height);
         d_raydirs[idx].dir = randvector(d_random[randidx], hit.normal);
     }
