@@ -56,6 +56,7 @@ typedef struct shape_t
 typedef struct camera_t
 {
     int width, height;
+    float ratio;
     float4 pos;
     float4 dir;
     float4 up;

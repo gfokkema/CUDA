@@ -22,6 +22,7 @@ public:
     const Vector right() const;
     const int width() const;
     const int height() const;
+    const float ratio() const;
     const int size() const;
     const camera_t gpu_type() const;
 

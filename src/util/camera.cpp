@@ -1,12 +1,16 @@
 #include "camera.h"
+#include <iostream>
 
-Camera::Camera(int width, int height, float angle, Vector pos, Vector dir)
-: _width(width),
-  _height(height),
-  _pos(pos),
-  _dir(dir),
-  _right { tanf(angle / 360 * 2 * M_PI), 0, 0 }
+Camera::Camera(int _width, int _height, float _angle, Vector _pos, Vector _dir)
+: _width(_width),
+  _height(_height),
+  _pos(_pos),
+  _dir(_dir),
+  _right { tanf(_angle / 360 * 2 * M_PI), 0, 0 }
 {
+    std::cout << "Right: " << right().length() << std::endl;
+    std::cout << "Up: " << up().length() << std::endl;
+    std::cout << "Dir: " << dir().length() << std::endl;
 }
 
 Camera::~Camera()
@@ -39,33 +43,45 @@ const Vector Camera::pos() const
 {
     return _pos;
 }
+
 const Vector Camera::dir() const
 {
     return _dir;
 }
+
 const Vector Camera::up() const
 {
-    return _right % _dir * _height / float(_width);
+    return _right % _dir;
 }
+
 const Vector Camera::right() const
 {
     return _right;
 }
+
 const int Camera::width() const
 {
     return _width;
 }
+
 const int Camera::height() const
 {
     return _height;
 }
+
+const float Camera::ratio() const
+{
+    return _width / float(_height);
+}
+
 const int Camera::size() const
 {
     return _height * _width;
 }
+
 const camera_t Camera::gpu_type() const
 {
-    camera_t camera = { _width, _height, pos().gpu_type(), dir().gpu_type(),
-                        up().gpu_type(), right().gpu_type() };
+    camera_t camera = { width(), height(), ratio(), pos().gpu_type(),
+                        dir().gpu_type(), up().gpu_type(), right().gpu_type() };
     return camera;
 }

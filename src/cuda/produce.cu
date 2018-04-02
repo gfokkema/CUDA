@@ -13,18 +13,18 @@ produceray(__const__ camera_t cam,
     unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
     int idx = yi * cam.width + xi;
 
-    float x = 2 * (xi + .5) / cam.width  - 1;
-    float y = 2 * (yi + .5) / cam.height - 1;
+    float x = (2 * (xi + .5) / cam.width  - 1) * cam.ratio;
+    float y = (2 * (yi + .5) / cam.height - 1);
 
     // Initialize rays
-    d_raydirs[idx].pos = cam.pos + cam.dir + x * cam.right + y * cam.up;
-    d_raydirs[idx].dir = normalize(d_raydirs[idx].pos - cam.pos);
+    d_raydirs[idx].pos = cam.pos;
+    d_raydirs[idx].dir = normalize(cam.dir + x * cam.right + y * cam.up);
 
     // Initialize result buffers
-    d_factor[idx]  = (float4){ 1, 1, 1, 0};
-    d_result[idx]  = (float4){ 0, 0, 0, 0};
+    d_factor[idx]  = (float4){ 1, 1, 1, 0 };
+    d_result[idx]  = (float4){ 0, 0, 0, 0 };
     if (samplecount == 0)
-        d_film[idx] = (float4){ 0, 0, 0, 0};
+        d_film[idx] = (float4){ 0, 0, 0, 0 };
 }
 
 __host__
