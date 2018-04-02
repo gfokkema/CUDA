@@ -51,6 +51,10 @@ Scene::Scene(Camera* cam)
     shapes.push_back( { { Vector(0, 0, -e - 1).gpu_type(), 1e5 }, 2, SPHERE }); // BACK: GREEN
     shapes.push_back( { { Vector(0, 0, +e - 1).gpu_type(), 1e5 }, 2, SPHERE }); // BEHIND: WHITE
 
+    // RANDOM GENERATOR
+    SAFE_RAND(curandCreateGenerator(&d_generator, CURAND_RNG_PSEUDO_DEFAULT));
+    SAFE_RAND(curandSetPseudoRandomGeneratorSeed(d_generator, time(NULL)));
+
     // PER PIXEL BUFFERS
     SAFE(cudaMalloc(&d_output, p_cam->size() * sizeof(color_t)));
     SAFE(cudaMalloc(&d_random, p_cam->size() * sizeof(float4)));
@@ -70,6 +74,7 @@ Scene::Scene(Camera* cam)
 
 Scene::~Scene()
 {
+    SAFE_RAND(curandDestroyGenerator(d_generator));
     SAFE(cudaFree(d_factor));
     SAFE(cudaFree(d_raydirs));
     SAFE(cudaFree(d_random));
@@ -81,20 +86,22 @@ Scene::~Scene()
 
 scene_t Scene::gpu_type()
 {
-    return
-    {   8, 0, p_cam->gpu_type(), d_shapes, d_mats}; // FIXME: hardcoded shape size
+    scene_t scene = { 8, 0, p_cam->gpu_type(), d_shapes, d_mats }; // FIXME: hardcoded shape size
+    return scene;
 }
 
 void Scene::render(color_t* output)
 {
 //    start_timer();
-    cudaproduceray(p_cam->gpu_type(), d_raydirs, d_factor, d_result, d_film, sample);
+    SAFE_RAND(curandGenerateUniform(d_generator, (float *)d_random, 4 * p_cam->size()));
+
+    cudaproduceray(p_cam->gpu_type(), d_raydirs, d_factor, d_result, d_film,
+                   sample);
     cudapathtrace(this->gpu_type(), d_raydirs, d_factor, d_result, d_random);
     cudargbtoint(p_cam->gpu_type(), d_result, d_film, sample, d_output);
 
-    printf("%d\n", sample++);
-
     int camsize = p_cam->size() * sizeof(color_t);
     SAFE(cudaMemcpy(output, d_output, camsize, cudaMemcpyDeviceToHost));
+    printf("%d\n", sample++);
 //    end_timer();
 }

@@ -24,6 +24,7 @@ private:
     Camera* p_cam;
 
     // Device buffers, these actually don't belong.
+    curandGenerator_t d_generator;
     float4* d_factor;
     ray_t* d_raydirs;
     float4* d_random;

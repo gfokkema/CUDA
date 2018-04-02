@@ -115,13 +115,6 @@ cudapathtrace(scene_t scene,
               float4* d_result,
               float4* d_random)
 {
-    unsigned size = scene.camera.height * scene.camera.width;
-
-    curandGenerator_t gen;
-    SAFE_RAND( curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT) );
-    SAFE_RAND( curandSetPseudoRandomGeneratorSeed(gen, time(NULL)) );
-    SAFE_RAND( curandGenerateUniform(gen, (float*)d_random, 4 * size) );
-
     // Perform computation on device
     dim3 threadsperblock(8, 8);
     dim3 numblocks(scene.camera.width  / threadsperblock.x,
