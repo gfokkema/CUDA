@@ -2,7 +2,8 @@
 #define __GPU_VECTOR_CUH
 
 __device__ inline
-float4 operator+(const float4& lhs, const float4& rhs) {
+float4 operator+(const float4& lhs, const float4& rhs)
+{
     float4 retval;
     retval.x = lhs.x + rhs.x;
     retval.y = lhs.y + rhs.y;
@@ -11,7 +12,8 @@ float4 operator+(const float4& lhs, const float4& rhs) {
 }
 
 __device__ inline
-float4 operator-(const float4& lhs) {
+float4 operator-(const float4& lhs)
+{
     float4 retval;
     retval.x = -lhs.x;
     retval.y = -lhs.y;
@@ -20,7 +22,8 @@ float4 operator-(const float4& lhs) {
 }
 
 __device__ inline
-float4 operator-(const float4& lhs, const float4& rhs) {
+float4 operator-(const float4& lhs, const float4& rhs)
+{
     float4 retval;
     retval.x = lhs.x - rhs.x;
     retval.y = lhs.y - rhs.y;
@@ -29,7 +32,8 @@ float4 operator-(const float4& lhs, const float4& rhs) {
 }
 
 __device__ inline
-float4 operator*(const float4& lhs, const float4& rhs) {
+float4 operator*(const float4& lhs, const float4& rhs)
+{
     float4 retval;
     retval.x = lhs.x * rhs.x;
     retval.y = lhs.y * rhs.y;
@@ -38,7 +42,8 @@ float4 operator*(const float4& lhs, const float4& rhs) {
 }
 
 __device__ inline
-float4 operator*(const float& lhs, const float4& rhs) {
+float4 operator*(const float& lhs, const float4& rhs)
+{
     float4 retval;
     retval.x = lhs * rhs.x;
     retval.y = lhs * rhs.y;
@@ -47,12 +52,14 @@ float4 operator*(const float& lhs, const float4& rhs) {
 }
 
 __device__ inline
-float4 operator*(const float4& lhs, const float& rhs) {
+float4 operator*(const float4& lhs, const float& rhs)
+{
     return rhs * lhs;
 }
 
 __device__ inline
-float4 operator/(const float4& lhs, const float& rhs) {
+float4 operator/(const float4& lhs, const float& rhs)
+{
     float4 retval;
     retval.x = lhs.x / rhs;
     retval.y = lhs.y / rhs;
@@ -61,36 +68,40 @@ float4 operator/(const float4& lhs, const float& rhs) {
 }
 
 __device__ inline
-float dot(const float4& lhs, const float4& rhs) {
+float dot(const float4& lhs, const float4& rhs)
+{
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
 __device__ inline
-float length(const float4& lhs) {
+float length(const float4& lhs)
+{
     return sqrt(dot(lhs, lhs));
 }
 
 __device__ inline
-float4 normalize(const float4& lhs) {
+float4 normalize(const float4& lhs)
+{
     return lhs / length(lhs);
 }
 
 __device__ inline
-float4 reflect(const float4& raydir, const float4& normal) {
+float4 reflect(const float4& raydir, const float4& normal)
+{
     return raydir - 2 * dot(raydir, normal) * normal;
 }
 
 __device__ inline
-float4 randvector(const float4& randray, const float4& normal) {
-    float4 retval;
-    float phi   = randray.x * 2 * M_PI;
-    float theta = acos(randray.y * 2 - 1);
+float4 randvector(const float4& randray, const float4& normal)
+{
+    float x = 2 * randray.x - 1;
+    float r = sqrt(1 - x * x);
+    float theta = randray.y * 2 * M_PI;
 
-    retval.x = sin(theta) * cos(phi);
-    retval.y = sin(theta) * sin(phi);
-    retval.z = cos(theta);
+    float4 retval = { x, sinf(theta) * r, cosf(theta) * r, 0 };
     if (dot(retval, normal) < 0)
         retval = -retval;
+
     return retval;
 }
 
