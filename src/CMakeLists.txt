@@ -14,5 +14,5 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory (cuda)
 add_subdirectory (util)
-cuda_add_executable   (raytracer window.cpp scene.cpp)
+cuda_add_executable   (raytracer window.cpp scene.cpp main.cpp)
 target_link_libraries (raytracer kernel util ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} ${GLEW_LIBRARIES} ${CUDA_curand_LIBRARY})

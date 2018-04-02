@@ -3,24 +3,27 @@
 
 #define EPSILON 1e-4
 
-enum shape_type
-{
-    SPHERE,
-    PLANE,
-    TRIANGLE
-};
-
 enum mat_type
 {
-    DIFFUSE,
-    TRANSPARENT,
-    MIRROR
+    DIFFUSE, TRANSPARENT, MIRROR
+};
+
+enum shape_type
+{
+    SPHERE, PLANE, TRIANGLE
 };
 
 typedef struct color_t
 {
     unsigned char r, g, b;
 } color_t;
+
+typedef struct mat_t
+{
+    float4 color;        // rgb color
+    float4 emit;         // rgb emittance color
+    mat_type type;
+} mat_t;
 
 typedef struct shape_t
 {
@@ -29,53 +32,56 @@ typedef struct shape_t
         // SPHERE
         struct
         {
-            float4 origin;	// offset 0
-            float radius;	// offset 16
+            float4 origin; // offset 0
+            float radius;  // offset 16
         } sphere;
         // PLANE
         struct
         {
-            float4 origin;	// offset 0
-            float4 normal;	// offset 16
+            float4 origin; // offset 0
+            float4 normal; // offset 16
         } plane;
         // TRIANGLE
         struct
         {
-            float4 v1;		// offset 0
-            float4 v2;		// offset 16
-            float4 v3;		// offset 32
+            float4 v1; // offset 0
+            float4 v2; // offset 16
+            float4 v3; // offset 32
         } triangle;
     };
-    short      matidx;
+    short matidx;
     shape_type type;
 } shape_t;
-
-typedef struct mat_t {
-    float4     color;        // rgb color
-    float4     emit;         // rgb emittance color
-    mat_type   type;
-} mat_t;
 
 typedef struct camera_t
 {
     int width, height;
-    float4     pos;
-    float4     dir;
-    float4     up;
-    float4     right;
+    float4 pos;
+    float4 dir;
+    float4 up;
+    float4 right;
 } camera_t;
+
+typedef struct scene_t
+{
+    int num_shapes;
+    int num_materials;
+    camera_t camera;
+    shape_t* shapes;
+    mat_t* materials;
+} scene_t;
 
 typedef struct ray_t
 {
-    float4     pos;
-    float4     dir;
+    float4 pos;
+    float4 dir;
 } ray_t;
 
 typedef struct hit_t
 {
-    float4     pos;
-    float4     normal;
-    short      matidx;
+    float4 pos;
+    float4 normal;
+    short matidx;
 } hit_t;
 
 #endif /* GPU_TYPES_H_ */

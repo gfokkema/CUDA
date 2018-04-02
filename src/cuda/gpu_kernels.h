@@ -38,29 +38,18 @@
 }
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-int cudaproduceray  (camera_t        cam,
-                     ray_t*          d_raydirs,
-                     float4*         d_factor,
-                     float4*         d_result,
-                     float4*         d_film,
-                     short           samplecount);
-int cudapathtrace   (camera_t        cam,
-                     ray_t*          d_raydirs,
-                     float4*         d_factor,
-                     float4*         d_result,
-                     float4*         d_random,
-                     mat_t*          d_materials,
-                     shape_t*        d_shapes, int num_shapes);
-int cudargbtoint    (camera_t        cam,
-                     float4*         d_result,
-                     float4*         d_film, short samplecount,
-                     color_t*        d_buffer);
+int cudaproduceray(camera_t cam, ray_t* d_raydirs, float4* d_factor,
+                   float4* d_result, float4* d_film, short samplecount);
+int cudapathtrace(scene_t scene, ray_t* d_raydirs, float4* d_factor,
+                  float4* d_result, float4* d_random);
+int cudargbtoint(camera_t cam, float4* d_result, float4* d_film,
+                 short samplecount, color_t* d_output);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif /** __HOST_KERNELS_CUH */

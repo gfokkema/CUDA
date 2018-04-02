@@ -1,7 +1,11 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <chrono>
+#include <exception>
 #include <iomanip>
 #include <iostream>
 #include <unistd.h>

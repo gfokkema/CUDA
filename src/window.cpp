@@ -1,31 +1,115 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "window.h"
 
-#include <scene.h>
+void focus_callback(GLFWwindow * glfwwindow, int focused)
+{
+    Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
+    window->cb_focus(focused);
+}
 
-#define WIDTH 640
-#define HEIGHT 480
+void key_callback(GLFWwindow * glfwwindow, int key, int scancode, int action,
+                  int mods)
+{
+    Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
+    window->cb_key(key, scancode, action, mods);
+}
 
-namespace {
-GLFWwindow* window;
-Camera cam(WIDTH, HEIGHT);
-Scene scene(&cam);
+void size_callback(GLFWwindow * glfwwindow, int width, int height)
+{
+    Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
+    window->cb_size(width, height);
+}
 
-/**
- * Time independent keyboard function
- */
-void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
-    switch (key) {
-    case GLFW_KEY_ESCAPE:
-        glfwSetWindowShouldClose(window, 1);
-        break;
+Window::Window(int width, int height, std::string title)
+: p_window(nullptr),
+  m_width(width),
+  m_height(height),
+  m_title(title)
+{
+    // Initialise GLFW
+    if (!glfwInit())
+    {
+        throw std::runtime_error("Failed to initialize GLFW");
     }
+
+    // Open a window and create its OpenGL context
+    p_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+    // FIXME: glfwCreateWindow causes a race condition!
+    //        Find a way to block until succesfull window creation...
+    usleep(10000);
+    if (p_window == NULL)
+    {
+        glfwTerminate();
+        throw std::runtime_error("Failed to open GLFW window.\n");
+    }
+    glfwMakeContextCurrent(p_window);
+    glfwSetWindowUserPointer(p_window, this);
+
+    // Initialize GLEW
+    if (glewInit() != GLEW_OK)
+    {
+        glfwTerminate();
+        throw std::runtime_error("Failed to initialize GLEW");
+    }
+
+    init_input();
+    init_buffers();
+}
+
+Window::~Window()
+{
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
+}
+
+void Window::init_input()
+{
+    // Ensure we can capture the escape key being pressed below
+    glfwSetInputMode(p_window, GLFW_STICKY_KEYS, GL_TRUE);
+//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // Set the keyboard callback for time independent keyboard handling
+    glfwSetKeyCallback(p_window, &key_callback);
+    glfwSetWindowFocusCallback(p_window, &focus_callback);
+    glfwSetWindowSizeCallback(p_window, &size_callback);
+}
+
+void Window::init_buffers()
+{
+    // Initialize our vertex buffer
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_vbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_width * m_height * 3, 0,
+    GL_DYNAMIC_DRAW);
+}
+
+void Window::render(Scene& scene)
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Map the buffer and render the scene
+    color_t* buffer = (color_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER,
+                                             GL_WRITE_ONLY);
+    scene.render(buffer);
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+
+    // Draw the buffer onto the off screen buffer
+    glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0); // FIXME: fixed width and height
+
+    // Swap buffers
+    glfwSwapBuffers(p_window);
+    glfwPollEvents();
+}
+
+bool Window::should_close()
+{
+    return glfwWindowShouldClose(p_window);
 }
 
 /**
  * Focus callback function
  */
-void focus_callback(GLFWwindow * window, int focused) {
+void Window::cb_focus(int focused)
+{
 //    if (focused) {
 //        double middle_x = WIDTH/2.0;
 //        double middle_y = HEIGHT/2.0;
@@ -34,106 +118,57 @@ void focus_callback(GLFWwindow * window, int focused) {
 //    }
 }
 
-void handle_mouse() {
-    double middle_x = WIDTH/2.0;
-    double middle_y = HEIGHT/2.0;
-
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
-    if (x < WIDTH && y < HEIGHT) {
-        double dx = x - middle_x;
-        double dy = y - middle_y;
-        if (dx == 0.f && dy == 0.f) return;
-
-        cam.lookAt(x, HEIGHT - y);
+/**
+ * Time independent keyboard function
+ */
+void Window::cb_key(int key, int scancode, int action, int mods)
+{
+    switch (key)
+    {
+    case GLFW_KEY_ESCAPE:
+        glfwSetWindowShouldClose(p_window, 1);
+        break;
     }
-    glfwSetCursorPos(window, middle_x, middle_y);
+}
+
+void Window::cb_size(int width, int height)
+{
+    std::cout << "New size: (" << width << "," << height << ")" << std::endl;
+
+    m_width = width;
+    m_height = height;
 }
 
 /**
  * Time dependent keyboard function
  */
-void handle_keyboard(float dt) {
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) cam.strafe(-1.f, dt);
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cam.strafe(1.f, dt);
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) cam.move(1.f, dt);
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) cam.move(-1.f, dt);
+void Window::handle_key(Camera* cam, float dt)
+{
+    if (glfwGetKey(p_window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        cam->strafe(-1.f, dt);
+    if (glfwGetKey(p_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        cam->strafe(1.f, dt);
+    if (glfwGetKey(p_window, GLFW_KEY_UP) == GLFW_PRESS)
+        cam->move(1.f, dt);
+    if (glfwGetKey(p_window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        cam->move(-1.f, dt);
 }
 
-void handle_input(float dt) {
-    handle_keyboard(dt);
-//    handle_mouse();
-}
-}
+void Window::handle_mouse(Camera* cam)
+{
+    double middle_x = m_width / 2.0;
+    double middle_y = m_height / 2.0;
 
-int main(int argc, char* argv[]) {
-    // Initialise GLFW
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return -1;
+    double x, y;
+    glfwGetCursorPos(p_window, &x, &y);
+    glfwSetCursorPos(p_window, middle_x, middle_y);
+    if (x < m_width && y < m_height)
+    {
+        double dx = x - middle_x;
+        double dy = y - middle_y;
+        if (dx == 0.f && dy == 0.f)
+            return;
+
+        cam->lookAt(x, m_height - y);
     }
-
-    // Open a window and create its OpenGL context
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Raytracer", NULL, NULL);
-    // FIXME:	glfwCreateWindow causes the race condition!
-    // 			Find a way to block until succesfull window creation...
-    usleep(10000);
-    if( window == NULL ){
-        std::cerr << "Failed to open GLFW window.\n" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-
-    // Initialize GLEW
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
-        return -1;
-    }
-
-    // Ensure we can capture the escape key being pressed below
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // Set the keyboard callback for time independent keyboard handling
-    glfwSetKeyCallback(window, &key_callback);
-    glfwSetWindowFocusCallback(window, &focus_callback);
-
-    // Initialize our vertex buffer
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, vbo);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 3, 0, GL_DYNAMIC_DRAW);
-
-    // Set the timer to zero
-    glfwSetTime(0.0);
-    double prev = 0;
-    unsigned frames = 0;
-    do {
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // Map the buffer and render the scene
-        color_t* buffer = (color_t*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-        scene.render(buffer);
-        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-        // Draw the buffer onto the off screen buffer
-        glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-        // Swap buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-
-        double cur = glfwGetTime();
-        handle_input(cur - prev);
-
-        //std::cout << "FPS: " << ++frames / cur << "\r";
-        //std::flush(std::cout);
-        prev = cur;
-    } while(!glfwWindowShouldClose(window));
-
-    std::cout << std::endl;
-
-    // Close OpenGL window and terminate GLFW
-    glfwTerminate();
 }

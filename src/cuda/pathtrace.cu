@@ -37,28 +37,26 @@ intersect(ray_t& ray, shape_t& shape, hit_t* hit)
 
 __global__
 void
-pathtraceray(camera_t         cam,
-             ray_t*           d_raydirs,
-             float4*          d_factor,
-             float4*          d_result,
-             float4*          d_random,
-             mat_t*           d_materials,
-             shape_t*         d_shapes, int num_shapes)
+pathtraceray(scene_t scene,
+             ray_t*  d_raydirs,
+             float4* d_factor,
+             float4* d_result,
+             float4* d_random)
 {
     int xi = blockIdx.x * blockDim.x + threadIdx.x;
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned idx = (yi * cam.width + xi);
+    unsigned idx = (yi * scene.camera.width + xi);
 
     if (d_factor[idx].w < 0) return;
 
     float dist = FLT_MAX;
     hit_t hit;
-    for (int i = 0; i < num_shapes; i++)
+    for (int i = 0; i < scene.num_shapes; i++)
     {
         hit_t new_hit;
-        if (intersect(d_raydirs[idx], d_shapes[i], &new_hit))
+        if (intersect(d_raydirs[idx], scene.shapes[i], &new_hit))
         {
-            float new_dist = length(new_hit.pos - cam.pos);
+            float new_dist = length(new_hit.pos - scene.camera.pos);
             if (new_dist < dist)
             {
                 dist = new_dist;
@@ -74,7 +72,7 @@ pathtraceray(camera_t         cam,
         return;
     }
 
-    mat_t* mat     = d_materials + hit.matidx;
+    mat_t* mat     = scene.materials + hit.matidx;
     if (length(mat->emit) > EPSILON)
     {
         d_result[idx]   = d_result[idx] + d_factor[idx] * mat->emit;   // ACCUMULATE COLOR USING  REFLECT AND EMIT
@@ -99,7 +97,7 @@ pathtraceray(camera_t         cam,
         //         = 2pi * rho / pi * dot(L, N)
         //         = 2 * rho * dot(L, N)
         d_factor[idx]    = d_factor[idx] * 2 * mat->color * dot(-d_raydirs[idx].dir, hit.normal);
-        unsigned randidx = (idx + (int)dot(d_raydirs[idx].dir, d_raydirs[idx].pos)) % (cam.width * cam.height);
+        unsigned randidx = (idx + (int)dot(d_raydirs[idx].dir, d_raydirs[idx].pos)) % (scene.camera.width * scene.camera.height);
         d_raydirs[idx].dir = randvector(d_random[randidx], hit.normal);
     }
     else if (mat->type == TRANSPARENT)
@@ -111,15 +109,13 @@ pathtraceray(camera_t         cam,
 }
 
 int
-cudapathtrace(camera_t        cam,
-              ray_t*          d_raydirs,
-              float4*         d_factor,
-              float4*         d_result,
-              float4*         d_random,
-              mat_t*          d_materials,
-              shape_t*        d_shapes, int num_shapes)
+cudapathtrace(scene_t scene,
+              ray_t*  d_raydirs,
+              float4* d_factor,
+              float4* d_result,
+              float4* d_random)
 {
-    unsigned size = cam.height * cam.width;
+    unsigned size = scene.camera.height * scene.camera.width;
 
     curandGenerator_t gen;
     SAFE_RAND( curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT) );
@@ -128,17 +124,13 @@ cudapathtrace(camera_t        cam,
 
     // Perform computation on device
     dim3 threadsperblock(8, 8);
-    dim3 numblocks(cam.width  / threadsperblock.x,
-                   cam.height / threadsperblock.y);
+    dim3 numblocks(scene.camera.width  / threadsperblock.x,
+                   scene.camera.height / threadsperblock.y);
     for (int i = 0; i < 10; i++)
     {
-        pathtraceray <<< numblocks,threadsperblock >>> (cam,
-                                                        d_raydirs,
-                                                        d_factor,
-                                                        d_result,
-                                                        d_random,
-                                                        d_materials,
-                                                        d_shapes, num_shapes);
+        pathtraceray <<< numblocks,threadsperblock >>> (
+            scene, d_raydirs, d_factor, d_result, d_random
+        );
     }
     CHECK_ERROR("Launching pathtrace kernel");
 
