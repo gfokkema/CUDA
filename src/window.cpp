@@ -1,19 +1,24 @@
 #include "window.h"
 
-void focus_callback(GLFWwindow * glfwwindow, int focused)
+#include "device/device.h"
+
+void
+focus_callback(GLFWwindow * glfwwindow, int focused)
 {
     Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
     window->cb_focus(focused);
 }
 
-void key_callback(GLFWwindow * glfwwindow, int key, int scancode, int action,
+void
+key_callback(GLFWwindow * glfwwindow, int key, int scancode, int action,
                   int mods)
 {
     Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
     window->cb_key(key, scancode, action, mods);
 }
 
-void size_callback(GLFWwindow * glfwwindow, int width, int height)
+void
+size_callback(GLFWwindow * glfwwindow, int width, int height)
 {
     Window* window = (Window*) glfwGetWindowUserPointer(glfwwindow);
     window->cb_size(width, height);
@@ -28,7 +33,7 @@ Window::Window(int width, int height, std::string title)
     // Initialise GLFW
     if (!glfwInit())
     {
-        throw std::runtime_error("Failed to initialize GLFW");
+        throw std::runtime_error("Failed to initialize GLFW.");
     }
 
     // Open a window and create its OpenGL context
@@ -39,7 +44,7 @@ Window::Window(int width, int height, std::string title)
     if (p_window == NULL)
     {
         glfwTerminate();
-        throw std::runtime_error("Failed to open GLFW window.\n");
+        throw std::runtime_error("Failed to open GLFW window.");
     }
     glfwMakeContextCurrent(p_window);
     glfwSetWindowUserPointer(p_window, this);
@@ -48,7 +53,7 @@ Window::Window(int width, int height, std::string title)
     if (glewInit() != GLEW_OK)
     {
         glfwTerminate();
-        throw std::runtime_error("Failed to initialize GLEW");
+        throw std::runtime_error("Failed to initialize GLEW.");
     }
 
     init_input();
@@ -61,7 +66,8 @@ Window::~Window()
     glfwTerminate();
 }
 
-void Window::init_input()
+void
+Window::init_input()
 {
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(p_window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -73,23 +79,41 @@ void Window::init_input()
     glfwSetWindowSizeCallback(p_window, &size_callback);
 }
 
-void Window::init_buffers()
+void
+Window::init_buffers()
 {
     // Initialize our vertex buffer
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_vbo);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_width * m_height * 3, 0,
-    GL_DYNAMIC_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_width * m_height * 3, 0, GL_DYNAMIC_DRAW);
 }
 
-void Window::render(Scene& scene)
+std::string
+Window::title()
+{
+    return m_title;
+}
+
+int
+Window::width()
+{
+    return m_width;
+}
+
+int
+Window::height()
+{
+    return m_height;
+}
+
+void
+Window::render(Device * device, Scene * scene)
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Map the buffer and render the scene
-    color_t* buffer = (color_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER,
-                                             GL_WRITE_ONLY);
-    scene.render(buffer);
+    color_t* buffer = (color_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+    device->render(buffer, scene);
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
     // Draw the buffer onto the off screen buffer
@@ -100,7 +124,8 @@ void Window::render(Scene& scene)
     glfwPollEvents();
 }
 
-bool Window::should_close()
+bool
+Window::should_close()
 {
     return glfwWindowShouldClose(p_window);
 }
@@ -108,7 +133,8 @@ bool Window::should_close()
 /**
  * Focus callback function
  */
-void Window::cb_focus(int focused)
+void
+Window::cb_focus(int focused)
 {
 //    if (focused) {
 //        double middle_x = WIDTH/2.0;
@@ -121,7 +147,8 @@ void Window::cb_focus(int focused)
 /**
  * Time independent keyboard function
  */
-void Window::cb_key(int key, int scancode, int action, int mods)
+void
+Window::cb_key(int key, int scancode, int action, int mods)
 {
     switch (key)
     {
@@ -131,7 +158,8 @@ void Window::cb_key(int key, int scancode, int action, int mods)
     }
 }
 
-void Window::cb_size(int width, int height)
+void
+Window::cb_size(int width, int height)
 {
     std::cout << "New size: (" << width << "," << height << ")" << std::endl;
 
@@ -142,7 +170,8 @@ void Window::cb_size(int width, int height)
 /**
  * Time dependent keyboard function
  */
-void Window::handle_key(Camera* cam, float dt)
+void
+Window::handle_key(Camera* cam, float dt)
 {
     if (glfwGetKey(p_window, GLFW_KEY_LEFT) == GLFW_PRESS)
         cam->strafe(-1.f, dt);
@@ -154,7 +183,8 @@ void Window::handle_key(Camera* cam, float dt)
         cam->move(-1.f, dt);
 }
 
-void Window::handle_mouse(Camera* cam)
+void
+Window::handle_mouse(Camera* cam)
 {
     double middle_x = m_width / 2.0;
     double middle_y = m_height / 2.0;

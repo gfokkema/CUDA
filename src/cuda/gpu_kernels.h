@@ -10,8 +10,6 @@
 #ifndef __HOST_KERNELS_CUH
 #define __HOST_KERNELS_CUH
 
-#define EPSILON 1e-4
-
 #define SAFE( call) {                                                       \
         cudaError err = call;                                               \
         if( cudaSuccess != err) {                                           \

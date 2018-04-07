@@ -1,7 +1,7 @@
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
 
-#define EPSILON 1e-4
+#define EPSILON 1e-6
 
 enum mat_type
 {

@@ -1,38 +1,24 @@
-#include "common.h"
+#include <common.h>
+#include <vector>
 
 #ifndef SCENE_H_
 #define SCENE_H_
 
 class Camera;
-class Ray;
 
 class Scene
 {
 public:
-    Scene(Camera* cam);
+    Scene(Camera * cam, std::vector<mat_t> materials, std::vector<shape_t> shapes);
     ~Scene();
 
-    Camera* cam()
-    {
-        return p_cam;
-    }
-
-    scene_t gpu_type();
-    void render(color_t* output);
-    Vector trace(const Ray& ray);
+    Camera * camera();
+    std::vector<mat_t> materials();
+    std::vector<shape_t> shapes();
 private:
-    Camera* p_cam;
-
-    // Device buffers, these actually don't belong.
-    curandGenerator_t d_generator;
-    float4* d_factor;
-    ray_t* d_raydirs;
-    float4* d_random;
-    float4* d_result;
-    float4* d_film;
-    color_t* d_output;    // output color
-    mat_t* d_mats;
-    shape_t* d_shapes;
+    Camera * p_cam;
+    std::vector<mat_t> m_materials;
+    std::vector<shape_t> m_shapes;
 };
 
 #endif /* SCENE_H_ */

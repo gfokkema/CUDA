@@ -8,6 +8,7 @@
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <unistd.h>
 #include <vector>
 
