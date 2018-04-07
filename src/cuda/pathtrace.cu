@@ -56,7 +56,7 @@ pathtraceray(scene_t scene,
         hit_t new_hit;
         if (intersect(d_raydirs[idx], scene.shapes[i], &new_hit))
         {
-            float new_dist = length(new_hit.pos - scene.camera.pos);
+            float new_dist = length(new_hit.pos - d_raydirs[idx].pos);
             if (new_dist < dist)
             {
                 dist = new_dist;
@@ -108,12 +108,13 @@ pathtraceray(scene_t scene,
     d_raydirs[idx].pos = hit.pos + EPSILON * d_raydirs[idx].dir;
 }
 
+__host__
 int
 cudapathtrace(scene_t scene,
               ray_t*  d_raydirs,
+              float4* d_random,
               float4* d_factor,
-              float4* d_result,
-              float4* d_random)
+              float4* d_result)
 {
     // Perform computation on device
     dim3 threadsperblock(8, 8);

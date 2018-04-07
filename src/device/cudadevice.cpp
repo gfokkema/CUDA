@@ -6,30 +6,11 @@
 #include <iomanip>
 #include <iostream>
 
-static int sample;
-std::chrono::time_point<std::chrono::system_clock> start;
-
-void
-start_timer()
-{
-    start = std::chrono::system_clock::now();
-}
-
-void
-end_timer()
-{
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double, std::milli> delta_time = end - start;
-    std::cout << "\e[7mFrame duration:\t" << std::setw(5) << delta_time.count()
-              << " ms" << "\tFramerate:\t" << std::setw(5)
-              << 1000 / delta_time.count() << " fps\r";
-    std::flush(std::cout);
-}
-
 CudaDevice::CudaDevice(int pixels, int matsize, int shapesize)
-: d_factor(nullptr),
+: d_raydirs(nullptr),
   d_random(nullptr),
-  d_raydirs(nullptr),
+  d_factor(nullptr),
+  d_result(nullptr),
   d_film(nullptr),
   d_output(nullptr),
   d_mats(nullptr),
@@ -48,12 +29,12 @@ CudaDevice::CudaDevice(int pixels, int matsize, int shapesize)
     SAFE_RAND(curandSetPseudoRandomGeneratorSeed(d_generator, time(NULL)));
 
     // PER PIXEL BUFFERS
-    SAFE(cudaMalloc(&d_output, pixels * sizeof(color_t)));
     SAFE(cudaMalloc(&d_random, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_raydirs, pixels * sizeof(ray_t)));
     SAFE(cudaMalloc(&d_factor, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_result, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_film, pixels * sizeof(float4)));
+    SAFE(cudaMalloc(&d_output, pixels * sizeof(color_t)));
 
     // SCENE DESCRIPTION
     SAFE(cudaMalloc(&d_mats, matsize * sizeof(mat_t)));
@@ -63,33 +44,53 @@ CudaDevice::CudaDevice(int pixels, int matsize, int shapesize)
 CudaDevice::~CudaDevice()
 {
     SAFE_RAND(curandDestroyGenerator(d_generator));
-    SAFE(cudaFree(d_factor));
     SAFE(cudaFree(d_raydirs));
     SAFE(cudaFree(d_random));
+    SAFE(cudaFree(d_factor));
+    SAFE(cudaFree(d_result));
     SAFE(cudaFree(d_film));
     SAFE(cudaFree(d_output));
     SAFE(cudaFree(d_mats));
     SAFE(cudaFree(d_shapes));
 }
 
-double
-CudaDevice::render(color_t * buffer, Scene * scene)
+void
+CudaDevice::copy(std::vector<mat_t> materials, std::vector<shape_t> shapes)
 {
-    int camsize = scene->camera()->size();
-    camera_t cam = scene->camera()->gpu_type();
-    scene_t _scene = { 8, 0, cam, d_shapes, d_mats }; // FIXME: hardcoded shape size
+    SAFE(cudaMemcpy(d_mats, materials.data(), materials.size() * sizeof(mat_t), cudaMemcpyHostToDevice));
+    SAFE(cudaMemcpy(d_shapes, shapes.data(), shapes.size() * sizeof(shape_t), cudaMemcpyHostToDevice));
+}
 
-    //    start_timer();
-    SAFE(cudaMemcpy(d_mats, scene->materials().data(), matsize * sizeof(mat_t), cudaMemcpyHostToDevice));
-    SAFE(cudaMemcpy(d_shapes, scene->shapes().data(), shapesize * sizeof(shape_t), cudaMemcpyHostToDevice));
+double
+CudaDevice::producerays(camera_t & camera, unsigned camsize, unsigned sample)
+{
     SAFE_RAND(curandGenerateUniform(d_generator, (float *)d_random, camsize * sizeof(float4)));
+    cudaproduceray(camera, d_raydirs, d_factor, d_result, d_film, sample);
 
-    cudaproduceray(cam, d_raydirs, d_factor, d_result, d_film, sample);
-    cudapathtrace(_scene, d_raydirs, d_factor, d_result, d_random);
-    cudargbtoint(cam, d_result, d_film, sample, d_output);
+    return 0.f;
+}
 
-    SAFE(cudaMemcpy(buffer, d_output, camsize * sizeof(color_t), cudaMemcpyDeviceToHost));
-    printf("%d\n", sample++);
-    //    end_timer();
+double
+CudaDevice::pathtrace(camera_t & camera)
+{
+    scene_t scene = { 8, 0, camera, d_shapes, d_mats }; // FIXME: hardcoded shape size
+    cudapathtrace(scene, d_raydirs, d_random, d_factor, d_result);
+
+    return 0.f;
+}
+
+double
+CudaDevice::rgbtoint(camera_t & camera, unsigned sample)
+{
+    cudargbtoint(camera, d_result, d_film, d_output, sample);
+
+    return 0.f;
+}
+
+double
+CudaDevice::write(color_t * buffer, unsigned size)
+{
+    SAFE(cudaMemcpy(buffer, d_output, size * sizeof(color_t), cudaMemcpyDeviceToHost));
+
     return 0.f;
 }

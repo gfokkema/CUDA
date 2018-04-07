@@ -42,10 +42,10 @@ extern "C"
 
 int cudaproduceray(camera_t cam, ray_t* d_raydirs, float4* d_factor,
                    float4* d_result, float4* d_film, short samplecount);
-int cudapathtrace(scene_t scene, ray_t* d_raydirs, float4* d_factor,
-                  float4* d_result, float4* d_random);
+int cudapathtrace(scene_t scene, ray_t* d_raydirs, float4* d_random,
+                  float4* d_factor, float4* d_result);
 int cudargbtoint(camera_t cam, float4* d_result, float4* d_film,
-                 short samplecount, color_t* d_output);
+                 color_t* d_output, short samplecount);
 
 #ifdef __cplusplus
 }

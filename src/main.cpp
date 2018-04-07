@@ -26,7 +26,7 @@ main(int argc, char* argv[])
     shapes.push_back( { { Vector(+e, 0, 0).gpu_type(), 1e5 }, 3, SPHERE }); // RIGHT: BLUE
     shapes.push_back( { { Vector(-e, 0, 0).gpu_type(), 1e5 }, 4, SPHERE }); // LEFT:  RED
     shapes.push_back( { { Vector(0, 0, -e - 1).gpu_type(), 1e5 }, 1, SPHERE }); // BACK: GREEN
-    shapes.push_back( { { Vector(0, 0, +e - 1).gpu_type(), 1e5 }, 2, SPHERE }); // BEHIND: WHITE
+    shapes.push_back( { { Vector(0, 0, +e - 1).gpu_type(), 1e5 }, 5, SPHERE }); // BEHIND: WHITE
 
     Window window;
     Camera cam(window.width(), window.height());

@@ -4,10 +4,10 @@ __global__
 void
 produceray(__const__ camera_t cam,
            ray_t*  d_raydirs,
-           float4*  d_factor,
+           float4* d_factor,
            float4* d_result,
            float4* d_film,
-           short samplecount)
+           short   samplecount)
 {
     unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
@@ -60,8 +60,8 @@ void
 rgbtoint(camera_t cam,
          float4*  d_result,
          float4*  d_film,
-         short    samplecount,
-         color_t* d_buffer)
+         color_t* d_output,
+         short    samplecount)
 {
     int xi = blockIdx.x * blockDim.x + threadIdx.x;
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
@@ -70,21 +70,22 @@ rgbtoint(camera_t cam,
     // Accumulate samples on the film, average them with samplecount
     d_film[idx] = d_film[idx] + d_result[idx];
 
-    d_buffer[idx].r = (int)(clamp(d_film[idx].x / samplecount) * 255);
-    d_buffer[idx].g = (int)(clamp(d_film[idx].y / samplecount) * 255);
-    d_buffer[idx].b = (int)(clamp(d_film[idx].z / samplecount) * 255);
+    d_output[idx].r = (int)(clamp(d_film[idx].x / samplecount) * 255);
+    d_output[idx].g = (int)(clamp(d_film[idx].y / samplecount) * 255);
+    d_output[idx].b = (int)(clamp(d_film[idx].z / samplecount) * 255);
 }
 
-int cudargbtoint(camera_t        cam,
-                 float4*         d_result,
-                 float4*         d_film, short samplecount,
-                 color_t*        d_buffer)
+int cudargbtoint(camera_t cam,
+                 float4*  d_result,
+                 float4*  d_film,
+                 color_t* d_output,
+                 short    samplecount)
 {
     dim3 threadsperblock(8, 8);
     dim3 numblocks(cam.width / threadsperblock.x,
                    cam.height / threadsperblock.y);
     rgbtoint <<< numblocks,threadsperblock >>> (
-        cam, d_result, d_film, samplecount, d_buffer
+        cam, d_result, d_film, d_output, samplecount
     );
     CHECK_ERROR("Launching rgbtoint kernel");
 
