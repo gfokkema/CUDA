@@ -1,6 +1,9 @@
 #ifndef __GPU_VECTOR_CUH
 #define __GPU_VECTOR_CUH
 
+#include <crt/host_defines.h>
+#include <vector_types.h>
+
 __device__ inline
 float4 operator+(const float4& lhs, const float4& rhs)
 {

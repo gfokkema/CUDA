@@ -1,6 +1,4 @@
-#include "window.h"
-
-#include "device/device.h"
+#include <window.h>
 
 void
 focus_callback(GLFWwindow * glfwwindow, int focused)

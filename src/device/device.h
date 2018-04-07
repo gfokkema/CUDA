@@ -1,7 +1,7 @@
-#include "common.h"
-
 #ifndef DEVICE_DEVICE_H_
 #define DEVICE_DEVICE_H_
+
+#include <common.h>
 
 class Scene;
 

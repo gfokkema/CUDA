@@ -1,8 +1,8 @@
-#include <common.h>
-#include <device/device.h>
-
 #ifndef DEVICE_CUDADEVICE_H_
 #define DEVICE_CUDADEVICE_H_
+
+#include <curand.h>
+#include <device/device.h>
 
 class CudaDevice : public Device
 {

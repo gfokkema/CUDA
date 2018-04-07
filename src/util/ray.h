@@ -1,7 +1,8 @@
-#include "vector.h"
-
 #ifndef RAY_CPP_
 #define RAY_CPP_
+
+#include <cuda/gpu_types.h>
+#include <util/vector.h>
 
 class Ray
 {

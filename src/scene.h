@@ -1,10 +1,9 @@
-#include <common.h>
-#include <vector>
-
 #ifndef SCENE_H_
 #define SCENE_H_
 
-class Camera;
+#include <common.h>
+#include <util/camera.h>
+#include <vector>
 
 class Scene
 {

@@ -1,12 +1,18 @@
-#include "camera.h"
+#include <cmath>
 #include <iostream>
+#include <util/camera.h>
+
+template<typename T>
+const T pi() {
+    return std::acos(-T(1));
+}
 
 Camera::Camera(int _width, int _height, float _angle, Vector _pos, Vector _dir)
 : _width(_width),
   _height(_height),
   _pos(_pos),
   _dir(_dir),
-  _right { tanf(_angle / 360 * 2 * M_PI), 0, 0 }
+  _right { std::tan(_angle / 360 * 2 * pi<float>()), 0, 0 }
 {
     std::cout << "Right: " << right().length() << std::endl;
     std::cout << "Up: " << up().length() << std::endl;

@@ -1,9 +1,8 @@
-#include <cuda/gpu_kernels.h>
-
-#include "vector.h"
-
 #ifndef CAMERA_H_
 #define CAMERA_H_
+
+#include <cuda/gpu_types.h>
+#include <util/vector.h>
 
 class Camera
 {
