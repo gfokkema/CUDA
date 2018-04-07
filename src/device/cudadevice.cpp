@@ -41,8 +41,8 @@ CudaDevice::CudaDevice(int pixels, int matsize, int shapesize)
     SAFE_RAND(curandSetPseudoRandomGeneratorSeed(d_generator, time(NULL)));
 
     // PER PIXEL BUFFERS
-    SAFE(cudaMalloc(&d_random, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_raydirs, pixels * sizeof(ray_t)));
+    SAFE(cudaMalloc(&d_random, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_factor, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_result, pixels * sizeof(float4)));
     SAFE(cudaMalloc(&d_film, pixels * sizeof(float4)));
