@@ -1,9 +1,9 @@
-#include <cmath>
-#include <ostream>
-#include <cuda/gpu_types.h>
-
 #ifndef __VECTOR_H_
 #define __VECTOR_H_
+
+#include <cmath>
+#include <ostream>
+#include <vector_types.h>
 
 class Vector
 {
@@ -52,7 +52,7 @@ public:
      */
     const float length() const
     {
-        return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     }
     const Vector normalize() const
     {

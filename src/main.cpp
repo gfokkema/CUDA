@@ -19,14 +19,14 @@ main(int argc, char* argv[])
     // shape_t { { origin, radius }, matidx, type }
     float e = 1e5 + 1;
     std::vector<shape_t> shapes;
-    shapes.push_back( { { Vector(-.5, 0, -1.5).gpu_type(), .3 }, 0, SPHERE });
-    shapes.push_back( { { Vector(+.5, 0, -1.5).gpu_type(), .3 }, 1, SPHERE });
-    shapes.push_back( { { Vector(0, +e, 0).gpu_type(), 1e5 }, 2, SPHERE }); // CEILING: WHITE
-    shapes.push_back( { { Vector(0, -e, 0).gpu_type(), 1e5 }, 2, SPHERE }); // FLOOR: WHITE
-    shapes.push_back( { { Vector(+e, 0, 0).gpu_type(), 1e5 }, 3, SPHERE }); // RIGHT: BLUE
-    shapes.push_back( { { Vector(-e, 0, 0).gpu_type(), 1e5 }, 4, SPHERE }); // LEFT:  RED
-    shapes.push_back( { { Vector(0, 0, -e - 1).gpu_type(), 1e5 }, 1, SPHERE }); // BACK: GREEN
-    shapes.push_back( { { Vector(0, 0, +e - 1).gpu_type(), 1e5 }, 5, SPHERE }); // BEHIND: WHITE
+    shapes.push_back( (shape_t) { { Vector(-.5, 0, -1.5).gpu_type(), .3 }, 0, SPHERE });
+    shapes.push_back( (shape_t) { { Vector(+.5, 0, -1.5).gpu_type(), .3 }, 1, SPHERE });
+    shapes.push_back( (shape_t) { { Vector(0, +e, 0).gpu_type(), 1e5 }, 2, SPHERE }); // CEILING: WHITE
+    shapes.push_back( (shape_t) { { Vector(0, -e, 0).gpu_type(), 1e5 }, 2, SPHERE }); // FLOOR: WHITE
+    shapes.push_back( (shape_t) { { Vector(+e, 0, 0).gpu_type(), 1e5 }, 3, SPHERE }); // RIGHT: BLUE
+    shapes.push_back( (shape_t) { { Vector(-e, 0, 0).gpu_type(), 1e5 }, 4, SPHERE }); // LEFT:  RED
+    shapes.push_back( (shape_t) { { Vector(0, 0, -e - 1).gpu_type(), 1e5 }, 1, SPHERE }); // BACK: GREEN
+    shapes.push_back( (shape_t) { { Vector(0, 0, +e - 1).gpu_type(), 1e5 }, 5, SPHERE }); // BEHIND: WHITE
 
     Window window;
     Camera cam(window.width(), window.height());

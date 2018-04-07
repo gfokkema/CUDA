@@ -1,10 +1,22 @@
-#include <common.h>
 #include <device/cudadevice.h>
 #include <scene.h>
 
-#include <chrono>
-#include <iomanip>
-#include <iostream>
+#define SAFE( call) {                                                       \
+        cudaError err = call;                                               \
+        if( cudaSuccess != err) {                                           \
+            fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",   \
+                    __FILE__, __LINE__, cudaGetErrorString( err) );         \
+            exit(EXIT_FAILURE);                                             \
+        }                                                                   \
+}
+#define SAFE_RAND( call) {                                                  \
+        curandStatus_t err = call;                                          \
+        if (err != CURAND_STATUS_SUCCESS) {                                 \
+            fprintf(stderr, "Curand error in file '%s' in line %i : %d.\n", \
+                    __FILE__, __LINE__, err );                              \
+            exit(EXIT_FAILURE);                                             \
+        }                                                                   \
+}
 
 CudaDevice::CudaDevice(int pixels, int matsize, int shapesize)
 : d_raydirs(nullptr),

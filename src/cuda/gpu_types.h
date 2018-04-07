@@ -1,6 +1,8 @@
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
 
+#include <vector_types.h>
+
 #define EPSILON 1e-6
 
 enum mat_type

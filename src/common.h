@@ -13,8 +13,7 @@
 #include <vector>
 
 #include <cuda/gpu_kernels.h>
-#include "util/camera.h"
-#include "util/ray.h"
-#include "util/vector.h"
+#include <cuda/gpu_types.h>
+#include <util/vector.h>
 
 #endif /** __COMMON_H */

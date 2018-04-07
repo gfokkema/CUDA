@@ -1,4 +1,7 @@
-#include "gpu_kernels.h"
+#include <cstdio>
+#include <cuda/gpu_kernels.h>
+#include <cuda/gpu_types.h>
+#include <cuda/gpu_vector.h>
 
 __global__
 void

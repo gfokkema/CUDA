@@ -1,14 +1,13 @@
-#include <common.h>
-
 #ifndef WINDOW_H_
 #define WINDOW_H_
+
+#include <common.h>
+#include <device/device.h>
+#include <scene.h>
 
 #define TITLE "Raytracer"
 #define WIDTH 1280
 #define HEIGHT 800
-
-class Device;
-class Scene;
 
 class Window
 {

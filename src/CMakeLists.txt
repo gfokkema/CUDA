@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (RT-Raytracing)
 
-add_definitions(-std=c++14 -O3)
-list (APPEND CUDA_NVCC_FLAGS "-g -O0 -arch=compute_50; -code=sm_50")
+add_definitions(-std=c++14 -g -O3)
+list (APPEND CUDA_NVCC_FLAGS "-std=c++14 -g -O3 -arch=compute_50; -code=sm_50")
 
 find_package (CUDA)
 find_package (OpenGL REQUIRED)
