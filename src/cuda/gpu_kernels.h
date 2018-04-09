@@ -20,11 +20,11 @@ struct color_t;
 struct float4;
 struct ray_t;
 struct scene_t;
+struct state_t;
 
 int cudaproduceray(camera_t cam, ray_t* d_raydirs, float4* d_factor,
                    float4* d_result, float4* d_film, short samplecount);
-int cudapathtrace(scene_t scene, ray_t* d_raydirs, float4* d_random,
-                  float4* d_factor, float4* d_result);
+int cudapathtrace(scene_t scene, state_t state);
 int cudargbtoint(camera_t cam, float4* d_result, float4* d_film,
                  color_t* d_output, short samplecount);
 

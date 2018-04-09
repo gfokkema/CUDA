@@ -86,7 +86,8 @@ double
 CudaDevice::pathtrace(camera_t & camera)
 {
     scene_t scene = { 8, 0, camera, d_shapes, d_mats }; // FIXME: hardcoded shape size
-    cudapathtrace(scene, d_raydirs, d_random, d_factor, d_result);
+    state_t state = { d_raydirs, d_random, d_factor, d_result, 0 };
+    cudapathtrace(scene, state);
 
     return 0.f;
 }

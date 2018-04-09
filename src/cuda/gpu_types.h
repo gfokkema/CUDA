@@ -84,7 +84,16 @@ typedef struct hit_t
 {
     float4 pos;
     float4 normal;
-    short matidx;
+    mat_t* mat;
 } hit_t;
+
+typedef struct state_t
+{
+    ray_t*  d_raydirs;
+    float4* d_random;
+    float4* d_factor;
+    float4* d_result;
+    unsigned idx;
+} state_t;
 
 #endif /* GPU_TYPES_H_ */
