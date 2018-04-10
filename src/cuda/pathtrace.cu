@@ -1,5 +1,6 @@
 #include <cfloat>
 #include <cstdio>
+#include <curand.h>
 #include <cuda/bounce.h>
 #include <cuda/gpu_kernels.h>
 #include <cuda/gpu_types.h>
@@ -7,7 +8,9 @@
 
 __device__
 bool
-intersect(shape_t& shape, ray_t& ray, float4& loc)
+intersect(__const__ shape_t& shape,
+          __const__ ray_t& ray,
+          float4& loc)
 {
     float4 trans_origin = ray.pos - shape.sphere.origin;
     float a = dot(ray.dir, ray.dir);
@@ -38,7 +41,9 @@ intersect(shape_t& shape, ray_t& ray, float4& loc)
 
 __device__
 bool
-intersectscene(scene_t& scene, ray_t& ray, hit_t& hit)
+intersectscene(__const__ scene_t& scene,
+               __const__ ray_t& ray,
+               hit_t& hit)
 {
     float4 loc;
     float dist = FLT_MAX;
@@ -62,16 +67,17 @@ intersectscene(scene_t& scene, ray_t& ray, hit_t& hit)
 
 __global__
 void
-pathtraceray(scene_t scene, state_t state)
+pathtraceray(state_t state,
+             __const__ scene_t scene)
 {
     int xi = blockIdx.x * blockDim.x + threadIdx.x;
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
 
     unsigned idx   = state.idx = (yi * scene.camera.width + xi);
-    float4& factor = state.d_factor[idx];
+    float4& factor = state.factor[idx];
     if (factor.w < 0) return;
-    ray_t& ray     = state.d_raydirs[idx];
-    float4& result = state.d_result[idx];
+    ray_t& ray     = state.rays[idx];
+    float4& result = state.result[idx];
 
     // Check whether this ray intersected the scene, if not kill the ray
     hit_t hit;
@@ -93,20 +99,16 @@ pathtraceray(scene_t scene, state_t state)
 }
 
 __host__
-int
-cudapathtrace(scene_t scene, state_t state)
+void
+cudapathtrace(dims_t  dims,
+              state_t state,
+              scene_t scene,
+              gen_t   generator)
 {
-    // Perform computation on device
-    dim3 threadsperblock(8, 8);
-    dim3 numblocks(scene.camera.width  / threadsperblock.x,
-                   scene.camera.height / threadsperblock.y);
+    unsigned camsize = scene.camera.width * scene.camera.height;
     for (int i = 0; i < 10; i++)
     {
-        pathtraceray <<< numblocks,threadsperblock >>> (
-            scene, state
-        );
+        curandGenerateUniform(generator, (float *)state.random, camsize * 4);
+        pathtraceray <<< dims.blocks, dims.threads >>> (state, scene);
     }
-    CHECK_ERROR("Launching pathtrace kernel");
-
-    return 0;
 }

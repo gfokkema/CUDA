@@ -11,20 +11,19 @@ public:
     virtual ~CudaDevice();
 
     virtual void copy(std::vector<mat_t> materials, std::vector<shape_t> shapes);
-
-    virtual double producerays(camera_t & camera, unsigned camsize, unsigned sample);
-    virtual double pathtrace(camera_t & camera);
-    virtual double rgbtoint(camera_t & camera, unsigned sample);
     virtual double write(color_t * buffer, unsigned size);
+
+    virtual double producerays(scene_t& scene, unsigned camsize, unsigned sample);
+    virtual double pathtrace(scene_t& scene);
+    virtual double rgbtoint(scene_t& scene, unsigned sample);
+private:
+    dims_t d_dimensions(camera_t& camera);
+    virtual scene_t d_scene(Scene& scene);
 private:
     curandGenerator_t d_generator;
 
-    ray_t* d_raydirs;
-    float4* d_random;
-    float4* d_factor;
-    float4* d_result;
-    float4* d_film;
-    color_t* d_output;    // output color
+    state_t d_state;
+    output_t d_output;
 
     mat_t* d_mats;
     shape_t* d_shapes;

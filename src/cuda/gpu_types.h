@@ -1,9 +1,17 @@
 #ifndef GPU_TYPES_H_
 #define GPU_TYPES_H_
 
+#include <curand.h>
 #include <vector_types.h>
 
 #define EPSILON 1e-6
+
+typedef struct dims_t {
+    dim3 threads;
+    dim3 blocks;
+} dims_t;
+
+typedef curandGenerator_st* gen_t;
 
 enum mat_type
 {
@@ -89,11 +97,17 @@ typedef struct hit_t
 
 typedef struct state_t
 {
-    ray_t*  d_raydirs;
-    float4* d_random;
-    float4* d_factor;
-    float4* d_result;
+    ray_t*   rays;
+    float4*  random;
+    float4*  factor;
+    float4*  result;
     unsigned idx;
 } state_t;
+
+typedef struct output_t
+{
+    float4*  film;
+    color_t* output;
+} output_t;
 
 #endif /* GPU_TYPES_H_ */

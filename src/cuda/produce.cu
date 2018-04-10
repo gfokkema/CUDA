@@ -3,54 +3,6 @@
 #include <cuda/gpu_types.h>
 #include <cuda/gpu_vector.h>
 
-__global__
-void
-produceray(__const__ camera_t cam,
-           ray_t*  d_raydirs,
-           float4* d_factor,
-           float4* d_result,
-           float4* d_film,
-           short   samplecount)
-{
-    unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
-    int idx = yi * cam.width + xi;
-
-    float x = (2 * (xi + .5) / cam.width  - 1) * cam.ratio;
-    float y = (2 * (yi + .5) / cam.height - 1);
-
-    // Initialize rays
-    d_raydirs[idx].pos = cam.pos;
-    d_raydirs[idx].dir = normalize(cam.dir + x * cam.right + y * cam.up);
-
-    // Initialize result buffers
-    d_factor[idx]  = (float4){ 1, 1, 1, 0 };
-    d_result[idx]  = (float4){ 0, 0, 0, 0 };
-    if (samplecount == 0)
-        d_film[idx] = (float4){ 0, 0, 0, 0 };
-}
-
-__host__
-int
-cudaproduceray(camera_t cam,
-               ray_t*   d_raydirs,
-               float4*  d_factor,
-               float4*  d_result,
-               float4*  d_film,
-               short    samplecount)
-{
-    // Perform computation on device
-    dim3 threadsperblock(8, 8);
-    dim3 numblocks(cam.width / threadsperblock.x,
-                   cam.height / threadsperblock.y);
-    produceray <<< numblocks,threadsperblock >>> (
-        cam, d_raydirs, d_factor, d_result, d_film, samplecount
-    );
-    CHECK_ERROR("Launching produce kernel");
-
-    return 0;
-}
-
 __device__
 float
 clamp(float a)
@@ -60,37 +12,61 @@ clamp(float a)
 
 __global__
 void
-rgbtoint(camera_t cam,
-         float4*  d_result,
-         float4*  d_film,
-         color_t* d_output,
-         short    samplecount)
+produceray(__const__ state_t  state,
+           __const__ scene_t  scene)
+{
+    __const__ camera_t& cam = scene.camera;
+    unsigned xi = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned yi = blockIdx.y * blockDim.y + threadIdx.y;
+    int idx = yi * scene.camera.width + xi;
+
+    float x = (2 * (xi + .5) / cam.width  - 1) * cam.ratio;
+    float y = (2 * (yi + .5) / cam.height - 1);
+
+    // Initialize rays
+    state.rays[idx].pos = cam.pos;
+    state.rays[idx].dir = normalize(cam.dir + x * cam.right + y * cam.up);
+
+    // Initialize result buffers
+    state.factor[idx]  = (float4){ 1, 1, 1, 0 };
+    state.result[idx]  = (float4){ 0, 0, 0, 0 };
+}
+
+__global__
+void
+rgbtoint(__const__ state_t  state,
+         __const__ scene_t  scene,
+         __const__ output_t output,
+         short     samplecount)
 {
     int xi = blockIdx.x * blockDim.x + threadIdx.x;
     int yi = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned idx = (yi * cam.width + xi);
+    unsigned idx = (yi * scene.camera.width + xi);
 
     // Accumulate samples on the film, average them with samplecount
-    d_film[idx] = d_film[idx] + d_result[idx];
+    output.film[idx] = output.film[idx] + state.result[idx];
 
-    d_output[idx].r = (int)(clamp(d_film[idx].x / samplecount) * 255);
-    d_output[idx].g = (int)(clamp(d_film[idx].y / samplecount) * 255);
-    d_output[idx].b = (int)(clamp(d_film[idx].z / samplecount) * 255);
+    output.output[idx].r = (int)(clamp(output.film[idx].x / samplecount) * 255);
+    output.output[idx].g = (int)(clamp(output.film[idx].y / samplecount) * 255);
+    output.output[idx].b = (int)(clamp(output.film[idx].z / samplecount) * 255);
 }
 
-int cudargbtoint(camera_t cam,
-                 float4*  d_result,
-                 float4*  d_film,
-                 color_t* d_output,
-                 short    samplecount)
+__host__
+void
+cudaproduceray(dims_t   dims,
+               state_t  state,
+               scene_t  scene)
 {
-    dim3 threadsperblock(8, 8);
-    dim3 numblocks(cam.width / threadsperblock.x,
-                   cam.height / threadsperblock.y);
-    rgbtoint <<< numblocks,threadsperblock >>> (
-        cam, d_result, d_film, d_output, samplecount
-    );
-    CHECK_ERROR("Launching rgbtoint kernel");
+    produceray <<< dims.blocks, dims.threads >>> (state, scene);
+}
 
-    return 0;
+__host__
+void
+cudargbtoint(dims_t   dims,
+             state_t  state,
+             scene_t  scene,
+             output_t output,
+             short    samplecount)
+{
+    rgbtoint <<< dims.blocks, dims.threads >>> (state, scene, output, samplecount);
 }

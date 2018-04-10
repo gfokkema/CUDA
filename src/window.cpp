@@ -105,13 +105,13 @@ Window::height()
 }
 
 void
-Window::render(Device * device, Scene * scene)
+Window::render(Device& device, Scene& scene)
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Map the buffer and render the scene
     color_t* buffer = (color_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-    device->render(buffer, scene);
+    device.render(scene, buffer);
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
     // Draw the buffer onto the off screen buffer

@@ -30,8 +30,9 @@ main(int argc, char* argv[])
 
     Window window;
     Camera cam(window.width(), window.height());
+    Scene scene(cam, materials, shapes);
+
     CudaDevice device(cam.size(), materials.size(), shapes.size());
-    Scene scene(&cam, materials, shapes);
 
     // Set the timer to zero
     glfwSetTime(0.0);
@@ -40,7 +41,7 @@ main(int argc, char* argv[])
     // Do the render loop
     do
     {
-        window.render(&device, &scene);
+        window.render(device, scene);
         cur = glfwGetTime();
         window.handle_key(&cam, cur - prev);
         prev = cur;

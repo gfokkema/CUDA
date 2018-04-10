@@ -1,32 +1,20 @@
 #ifndef __HOST_KERNELS_CUH
 #define __HOST_KERNELS_CUH
 
-#define CHECK_ERROR(errorMessage) {                                                 \
-        cudaError_t err = cudaGetLastError();                                       \
-        if( cudaSuccess != err) {                                                   \
-            fprintf(stderr, "Cuda error: %s in file '%s' in line %i : %s.\n",       \
-                    errorMessage, __FILE__, __LINE__, cudaGetErrorString( err) );   \
-                    exit(EXIT_FAILURE);                                             \
-        }                                                                           \
-}
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-struct camera_t;
-struct color_t;
-struct float4;
-struct ray_t;
+struct dims_t;
 struct scene_t;
 struct state_t;
+struct output_t;
+struct curandGenerator_st;
 
-int cudaproduceray(camera_t cam, ray_t* d_raydirs, float4* d_factor,
-                   float4* d_result, float4* d_film, short samplecount);
-int cudapathtrace(scene_t scene, state_t state);
-int cudargbtoint(camera_t cam, float4* d_result, float4* d_film,
-                 color_t* d_output, short samplecount);
+void cudaproduceray(dims_t dim, state_t state, scene_t scene);
+void cudapathtrace(dims_t dim, state_t state, scene_t scene, curandGenerator_st* gen);
+void cudargbtoint(dims_t dim, state_t state, scene_t scene, output_t output, short samplecount);
 
 #ifdef __cplusplus
 }

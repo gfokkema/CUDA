@@ -23,7 +23,7 @@ public:
     int width();
     int height();
 
-    void render(Device * device, Scene * scene);
+    void render(Device& device, Scene& scene);
     bool should_close();
 
     void cb_focus(int focused);

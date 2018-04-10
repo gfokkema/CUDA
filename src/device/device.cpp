@@ -22,16 +22,16 @@ end_timer()
 }
 
 double
-Device::render(color_t * buffer, Scene * scene)
+Device::render(Scene& scene, color_t* buffer)
 {
-    int camsize = scene->camera()->size();
-    camera_t camera = scene->camera()->gpu_type();
+    this->copy(scene.materials(), scene.shapes());
 
-    this->producerays(camera, camsize, sample);
-    this->copy(scene->materials(), scene->shapes());
-    this->pathtrace(camera);
-    this->rgbtoint(camera, sample);
-    this->write(buffer, camsize);
+    scene_t gpu_scene = d_scene(scene);
+    this->producerays(gpu_scene, scene.camera().size(), sample);
+    this->pathtrace(gpu_scene);
+    this->rgbtoint(gpu_scene, sample);
+
+    this->write(buffer, scene.camera().size());
 
     printf("%d\n", sample++);
     return 0.f;
