@@ -3,4 +3,4 @@ set (kernel_sources
 	pathtrace.cu
 )
 
-cuda_add_library (kernel ${kernel_sources})
+add_library (kernel ${kernel_sources})
